@@ -74,10 +74,12 @@ class UITest {
     @DisplayName("User friendly NonNumeric check")
     void testFriendlyNonNumericError() {
         UI ui = createUIWithInput("abc");
-        ui.getInputNumber(4);
-        String output = outContent.toString();
-        assertTrue(output.contains("not a valid number"),
-                "UI should inform the user that text is not allowed.");
+        try {
+            ui.getInputNumber(4);
+            assertTrue(outContent.toString().contains("not a valid number"));
+        } catch (NumberFormatException e) {
+            fail("The UI crashed with NumberFormatException instead of showing a error message!");
+        }
     }
 
     @Test
@@ -91,11 +93,15 @@ class UITest {
     @DisplayName("User friendly Decimal check")
     void testFriendlyDecimalError() {
         UI ui = createUIWithInput("1.5");
-        ui.getInputNumber(4);
 
-        // Check if the friendly message was printed to the console
-        assertTrue(outContent.toString().contains("not a whole number"),
-                "The UI should explain WHY the input was rejected.");
+        try {
+            ui.getInputNumber(4);
+            String output = outContent.toString();
+            assertTrue(output.contains("not a valid whole number"),
+                    "The UI should have printed a error message.");
+        } catch (NumberFormatException e) {
+            fail("The UI crashed with a NumberFormatException! The UI schould printed a error message! ");
+        }
     }
 
 
