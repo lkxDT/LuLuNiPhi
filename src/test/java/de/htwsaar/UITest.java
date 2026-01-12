@@ -37,8 +37,8 @@ class UITest {
         return new UI(new Scanner(new ByteArrayInputStream(data.getBytes())));
     }
 
-    //Validation Tests
 
+    //Validation Tests
     @ParameterizedTest
     @ValueSource(strings = {"1", "2", "3"})
     @DisplayName("Valid Input: Should return correct integers")
@@ -46,67 +46,69 @@ class UITest {
         UI ui = createUIWithInput(input);
         assertEquals(Integer.parseInt(input), ui.getInputNumber(3));
     }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"0", "4", "-1", "99"})
-    @DisplayName("Invalid Range: Should throw IllegalArgumentException")
-    void testGetInputNumber_OutOfRange(String input) {
-        UI ui = createUIWithInput(input);
-        assertThrows(IllegalArgumentException.class, () -> ui.getInputNumber(3));
+    @Test
+    @DisplayName("Invalid Range: Should ask again and return valid input")
+    void testGetInputNumber_OutOfRange() {
+        UI ui = createUIWithInput("0 99 2");
+        int result = ui.getInputNumber(3);
+        assertEquals(2, result, "The UI should eventually return the valid input '2'");
+        String output = outContent.toString();
+        assertTrue(output.contains("Please enter a number between 1 and 3"),
+                "Should have warned the user about the range.");
     }
-
     @Test
     @DisplayName("Schould Handel Inputs with Spaces")
     void testGetInputNumber_WithSpaces() {
         UI ui = createUIWithInput(" 2 ");
         assertEquals(2, ui.getInputNumber(3), "UI should trim whitespace from input");
     }
-
     @Test
-    @DisplayName("Should Throw corect Exception on non-numeric strings")
+    @DisplayName("Should notify user on non-numeric strings")
     void testGetInputNumber_NotANumber() {
-        UI ui = createUIWithInput("abc");
-        assertThrows(NumberFormatException.class, () -> ui.getInputNumber(3),
-                "Should throw NumberFormatException for non-numeric strings");
+        UI ui = createUIWithInput("abc 1");
+        ui.getInputNumber(3);
+        String output = outContent.toString();
+        assertTrue(output.toLowerCase().contains("invalid") || output.contains("whole number"),
+                "Should have notified the user that 'abc' is not a valid input.");
     }
-
     @Test
     @DisplayName("User friendly NonNumeric check")
     void testFriendlyNonNumericError() {
-        UI ui = createUIWithInput("abc");
-        try {
-            ui.getInputNumber(4);
-            assertTrue(outContent.toString().contains("not a valid number"));
-        } catch (NumberFormatException e) {
-            fail("The UI crashed with NumberFormatException instead of showing a error message!");
-        }
+        UI ui = createUIWithInput("abc 1");
+        ui.getInputNumber(4);
+        String output = outContent.toString();
+        assertTrue(output.contains("whole number"),
+                "Expected output to mention 'whole number' but got: " + output);
     }
-
     @Test
-    @DisplayName("Decimal input check")
+    @DisplayName("Decimal input check - no longer throws exception")
     void testGetInputNumber_Decimal() {
-        UI ui = createUIWithInput("1.0");
-        assertThrows(NumberFormatException.class, () -> ui.getInputNumber(3));
+        UI ui = createUIWithInput("1.0 2");
+        int result = ui.getInputNumber(3);
+        assertEquals(2, result, "Should skip the decimal and return the next valid integer.");
+        assertTrue(outContent.toString().contains("decimals"), "Should show decimal error message");
     }
-
     @Test
     @DisplayName("User friendly Decimal check")
     void testFriendlyDecimalError() {
-        UI ui = createUIWithInput("1.5");
-
-        try {
-            ui.getInputNumber(4);
-            String output = outContent.toString();
-            assertTrue(output.contains("not a valid whole number"),
-                    "The UI should have printed a error message.");
-        } catch (NumberFormatException e) {
-            fail("The UI crashed with a NumberFormatException! The UI schould printed a error message! ");
-        }
+        UI ui = createUIWithInput("1.5 2");
+        int result = ui.getInputNumber(4);
+        String output = outContent.toString();
+        assertTrue(output.contains("decimals"), "Should warn about decimals");
+        assertEquals(2, result, "Should eventually return the valid number");
+    }
+    @Test
+    @DisplayName("Decimal check should not throw exception")
+    void testGetInputNumber_Decimal_NoException() {
+        UI ui = createUIWithInput("1.0 1");
+        assertDoesNotThrow(() -> {
+            int result = ui.getInputNumber(3);
+            assertEquals(1, result);
+        });
     }
 
 
     //MENU NAVIGATION TESTS
-
     @Test
     @DisplayName("Selecting '1' in Main Menu should show Employee Menu")
     void testNavigationToEmployeeMenu() {
@@ -116,7 +118,6 @@ class UITest {
         assertTrue(output.contains("Employees Menu:"), "Choosing 1 should display Employee Menu");
         assertTrue(output.contains("placeholder: show all employees"), "employees-menu choice should execute");
     }
-
     @Test
     @DisplayName("Selecting '2' in Main Menu should show Skills Menu")
     void testNavigationToSkillsMenu() {
@@ -131,7 +132,6 @@ class UITest {
         assertTrue(output.contains("Skills Menu:"), "Choosing 2 should display Skills Menu");
         assertTrue(output.contains("placeholder: show all skills"), "skills-menu choice should execute");
     }
-
     @Test
     @DisplayName("Selecting '3' in Main Menu should show Certificates Menu")
     void testNavigationToCertificatesMenu() {
@@ -146,9 +146,6 @@ class UITest {
         assertTrue(output.contains("Certificates Menu:"), "Choosing 3 should display Certificates Menu");
         assertTrue(output.contains("placeholder: show all certificates"), "certificates-menu choice should execute");
     }
-
-
-
     @Test
     @DisplayName("Selecting '4' in Main Menu should show Projects Menu")
     void testNavigationToProjectsMenu() {

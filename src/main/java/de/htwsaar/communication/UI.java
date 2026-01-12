@@ -16,19 +16,33 @@ public class UI {
         this.inputScanner = inputScanner;
     }
 
-    public int getInputNumber(int max) throws IllegalArgumentException {
-        // Use hasNext() to prevent NoSuchElementException during tests
-        if (!inputScanner.hasNext()) {
-            throw new IllegalArgumentException("No input available");
-        }
+    public int getInputNumber(int max) {
+        while (true) {
+            if (!inputScanner.hasNext()) {
+                return -1;
+            }
 
-        String input = inputScanner.next();
-        int numerizedInput = Integer.parseInt(input);
+            String input = inputScanner.next();
 
-        if (numerizedInput < 1 || numerizedInput > max) {
-            throw new IllegalArgumentException("No valid option");
+            if (input.contains(".") || input.contains(",")) {
+                System.out.println("Please do not use decimals or commas.");
+                continue;
+            }
+
+            try {
+                int numerizedInput = Integer.parseInt(input);
+
+                if (numerizedInput < 1 || numerizedInput > max) {
+                    System.out.println("Please enter a number between 1 and " + max + ".");
+                    continue;
+                }
+
+                return numerizedInput;
+
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a whole number.");
+            }
         }
-        return numerizedInput;
     }
 
     public void startMainMenu() {
