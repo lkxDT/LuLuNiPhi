@@ -16,5 +16,5 @@ public class EmployeeSkill {
     public int getEmployeeId() { return employeeId; }
     public int getSkillId() { return skillId; }
     public int getLevel() { return level; }
-    public String getsinceDate() { return sinceDate; }
+    public String getSinceDate() { return sinceDate; }
 }

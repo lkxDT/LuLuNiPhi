@@ -15,6 +15,12 @@ public class SkillRepository {
         this.conn = conn;
     }
 
+    /**
+     * Speichert einen Skill als Eintrag in der Datenbank
+     * @param name Name des übergebenen Skills
+     * @param category Name der übergebenen Kategorie
+     * @return DomainObjekt
+     */
     public Skill save(String name, String category) {
         try (PreparedStatement stmt =
                      conn.prepareStatement(

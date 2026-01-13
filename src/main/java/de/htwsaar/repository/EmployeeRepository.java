@@ -13,6 +13,17 @@ public class EmployeeRepository {
         this.conn = conn;
     }
 
+    /**
+     * Speichert einen Skill als Eintrag in der Datenbank
+     * @param firstName Firstname of employee
+     * @param lastName Lastname of employee
+     * @param email Email of employee
+     * @param role Role of employee
+     * @param status If the employee is currently in active employment, on leave, not available or not there anymore
+     * @param hireDate Date of employment
+     * @param workingHours Working hours per week
+     * @return Domain object of employee
+     */
     public Employee save(String firstName, String lastName,
                   String email, String role, String status,
                   String hireDate, int workingHours) {
@@ -39,10 +50,14 @@ public class EmployeeRepository {
         }
     }
 
+    /**
+     *
+     * @return List of all employees
+     */
     public List<Employee> findAll() {
         List<Employee> result = new ArrayList<>();
         try(Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("")) {
+            ResultSet rs = stmt.executeQuery("SELECT * FROM employee")) {
             while (rs.next()) {
                 result.add(new Employee(
                         rs.getInt("id"),

@@ -2,17 +2,28 @@
 package de.htwsaar.communication;
 
 import java.util.Scanner;
+import de.htwsaar.application.*;
+import de.htwsaar.domain.Employee;
 
 public class UI {
     private final Scanner inputScanner;
+    private final EmployeeService empService;
+    private final SkillService skillService;
 
     //Standat Scanner for usage
-    public UI() {
-        this(new Scanner(System.in));
+    public UI(EmployeeService ems, SkillService sks) {
+        this(new Scanner(System.in), ems, sks);
     }
 
-   //Custom Scanner for test inputs
-    public UI(Scanner inputScanner) {
+    /**
+     * Constructor for the UI Object
+     * @param inputScanner Scanner for Input (for tests)
+     * @param ems EmployeeService abstraction
+     * @param sks SkillService abstraction
+     */
+    public UI(Scanner inputScanner, EmployeeService ems, SkillService sks) {
+        this.empService = ems;
+        this.skillService = sks;
         this.inputScanner = inputScanner;
     }
 
@@ -45,6 +56,9 @@ public class UI {
         }
     }
 
+    /**
+     * Starts the main menu
+     */
     public void startMainMenu() {
         System.out.println("Main Menu:\n" +
                 "1. Employees\n" +
@@ -65,6 +79,9 @@ public class UI {
         }
     }
 
+    /**
+     * Opens the Menu for Employee
+     */
     public void employeeMenu() {
         System.out.println("Employees Menu:\n" +
                 "1. show all\n" +
@@ -72,12 +89,18 @@ public class UI {
                 "3. change\n");
 
         switch (this.getInputNumber(3)) {
-            case 1 -> System.out.println("placeholder: show all employees");
+            case 1 -> {
+                for(Employee emp : empService.getAllEmployees()) {
+                    System.out.println(emp);
+                }
+            }
             case 2 -> System.out.println("placeholder: add employee");
             case 3 -> System.out.println("placeholder: change employee");
         }
     }
-
+    /**
+     * Opens the Menu for Skill
+     */
     public void skillsMenu() {
         System.out.println("Skills Menu:\n" +
                 "1. show all\n" +

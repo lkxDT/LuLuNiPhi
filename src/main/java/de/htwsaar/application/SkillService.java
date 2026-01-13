@@ -13,6 +13,12 @@ public class SkillService {
         this.employeeSkillRepo = es;
     }
 
+    /**
+     *
+     * @param name Name of skill
+     * @param category Category of skill
+     * @return DomainObject of type Skill
+     */
     public  Skill createSkill(String name, String category) {
         return skillRepo.save(name, category);
     }

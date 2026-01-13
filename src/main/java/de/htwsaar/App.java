@@ -27,11 +27,10 @@ public class App
 
             var empService = new EmployeeService(empRepo);
             var skillService = new SkillService(skillRepo, empSkillRepo);
-            var userIn = new UI();
+            var userIn = new UI(empService, skillService);
             userIn.startMainMenu();
         } catch (SQLException e){
-            e.printStackTrace();
-            //TODO: UI einbeziehen
+            throw new RuntimeException(e);
         }
     }
 }

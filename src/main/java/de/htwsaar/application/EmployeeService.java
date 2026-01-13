@@ -18,7 +18,7 @@ public class EmployeeService {
         return this.repo.save(firstName, lastName, email, role, status, hireDate, workingHours);
     }
 
-    public List<Employee> listEmployees() {
+    public List<Employee> getAllEmployees() {
         return repo.findAll();
     }
 }

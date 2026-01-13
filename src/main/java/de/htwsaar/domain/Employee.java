@@ -28,5 +28,44 @@ public class Employee {
         return this.id;
     }
 
+    public String getFirstName() {
+        return this.firstName;
+    }
 
+    public String getLastName() {
+        return this.lastName;
+    }
+
+    public String getEmail() {
+        return this.email;
+    }
+
+    public String getRole() {
+        return this.role;
+    }
+
+    public String getStatus() {
+        return this.status;
+    }
+
+    public String getHireDate() {
+        return this.hireDate;
+    }
+
+    public int getWorkingHours() {
+        return this.workingHours;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%5d | %10s | %10s | %25s | %10s | %11s | %2d",
+                this.getID(),
+                this.getFirstName(),
+                this.getLastName(),
+                this.getEmail(),
+                this.getRole(),
+                this.getHireDate(),
+                this.getWorkingHours()
+        );
+    }
 }

@@ -12,6 +12,13 @@ public class EmployeeSkillRepository {
         this.conn = conn;
     }
 
+    /**
+     *
+     * @param employeeId Employee ID
+     * @param skillId Skill ID
+     * @param level Level of skill
+     * @param sinceDate Date of skill assignment
+     */
     public void assign(int employeeId, int skillId, int level, String sinceDate) {
         try (PreparedStatement stmt =
                      conn.prepareStatement(
