@@ -1,6 +1,10 @@
 package de.htwsaar;
 
+import de.htwsaar.application.EmployeeService;
+import de.htwsaar.application.SkillService;
 import de.htwsaar.communication.UI;
+import de.htwsaar.domain.Employee;
+import de.htwsaar.repository.EmployeeRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -11,20 +15,26 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.List;
 import java.util.Scanner;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class UITest {
-
+    private EmployeeService ems;
+    private SkillService sks;
     private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
     private final PrintStream originalOut = System.out;
 
     // Redirecting System.out to check what the UI prints
     @BeforeEach
-    public void setUpStreams() {
+    public void setUp() {
         System.setOut(new PrintStream(outContent));
+        EmployeeRepository mockRepo = new MockRepository();
+        this.ems = new EmployeeService(mockRepo);
+        this.sks = new SkillService(null, null);
     }
+
 
     // Set System.out back to normal after each test
     @AfterEach
@@ -34,7 +44,8 @@ class UITest {
 
     //Creating Ui with "Fake" input for Tests
     private UI createUIWithInput(String data) {
-        return new UI(new Scanner(new ByteArrayInputStream(data.getBytes())));
+        Scanner fakeScanner = new Scanner(new ByteArrayInputStream(data.getBytes()));
+        return new UI(fakeScanner, ems, sks);
     }
 
 
@@ -110,13 +121,20 @@ class UITest {
 
     //MENU NAVIGATION TESTS
     @Test
-    @DisplayName("Selecting '1' in Main Menu should show Employee Menu")
+    @DisplayName("Navigation: Selection 1 then 1 displays Mia Müller from MockRepo")
     void testNavigationToEmployeeMenu() {
-        UI ui = createUIWithInput("1\n1");
+        UI ui = createUIWithInput("1 1");
         ui.startMainMenu();
         String output = outContent.toString();
-        assertTrue(output.contains("Employees Menu:"), "Choosing 1 should display Employee Menu");
-        assertTrue(output.contains("placeholder: show all employees"), "employees-menu choice should execute");
+        try {
+            assertTrue(output.contains("Employees Menu:"), "Menu header missing");
+            assertTrue(output.contains("1 |"), "ID 1 should be visible");
+            assertTrue(output.contains("Mia") && output.contains("Müller"), "Data mismatch");
+            System.err.println("\u001B[32m✔ Test Passed: UI correctly displayed Mock data.\u001B[0m");
+        } catch (AssertionError e) {
+            System.err.println("\u001B[31m✘ Test Failed: UI output did not match expectations.\u001B[0m");
+            throw e;
+        }
     }
     @Test
     @DisplayName("Selecting '2' in Main Menu should show Skills Menu")
