@@ -1,4 +1,4 @@
-package de.htwsaar;
+package de.htwsaar.repositoryTest;
 
 import de.htwsaar.domain.Employee;
 import de.htwsaar.repository.EmployeeRepository;

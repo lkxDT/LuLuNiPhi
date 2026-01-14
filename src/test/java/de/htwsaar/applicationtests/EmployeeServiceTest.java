@@ -3,7 +3,7 @@ package de.htwsaar.applicationtests;
 import de.htwsaar.application.EmployeeService;
 import de.htwsaar.domain.Employee;
 import de.htwsaar.repository.EmployeeRepository;
-import de.htwsaar.MockEmployeeRepository;
+import de.htwsaar.repositoryTest.MockEmployeeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
