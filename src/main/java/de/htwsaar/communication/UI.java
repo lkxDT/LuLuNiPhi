@@ -95,7 +95,30 @@ public class UI {
                     System.out.println(emp);
                 }
             }
-            case 2 -> System.out.println("placeholder: add employee");
+            case 2 -> {
+                String firstName, lastName, email, role, status, hireDate;
+                int workingHours;
+
+                System.out.print("New Employee: \nPlease enter firstname: ");
+                firstName = inputScanner.next();
+                System.out.print("New Employee: \nPlease enter lastname: ");
+                lastName = inputScanner.next();
+                System.out.print("New Employee: \nPlease enter mail address: ");
+                email = inputScanner.next();
+                System.out.print("New Employee: \nPlease enter a role: ");
+                role = inputScanner.next();
+                System.out.print("New Employee: \nPlease enter a status for the employee: ");
+                status = inputScanner.next();
+                System.out.print("New Employee: \nPlease enter the date the employee was hired (yyyy-mm-dd): ");
+                hireDate = inputScanner.next();
+                System.out.print("New Employee: \nPlease enter the amount of hours the employee works in a week: ");
+                workingHours = inputScanner.nextInt();
+
+                try(empService.createEmployee(firstName, lastName, email, role, status, hireDate, workingHours);) {
+                    System.out.println("Employee successfully");
+                }
+
+            }
             case 3 -> System.out.println("placeholder: change employee");
         }
     }

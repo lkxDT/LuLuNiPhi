@@ -8,7 +8,7 @@ import java.sql.DriverManager;
 
 public class DatabaseMigration {
 
-    private static final String DB_PATH = "data/app.db";
+    private static final String DB_PATH = "main/data/employee.db";
     private static final String DB_URL  = "jdbc:sqlite:" + DB_PATH;
 
     /**
@@ -34,7 +34,3 @@ public class DatabaseMigration {
         }
     }
 }
-
-
-/** Database.migration.migrate() -> zur Main hinzufügen
- */

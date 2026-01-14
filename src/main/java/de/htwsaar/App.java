@@ -4,6 +4,7 @@ import de.htwsaar.application.*;
 import de.htwsaar.communication.UI;
 import de.htwsaar.repository.*;
 import org.sqlite.SQLiteConnection;
+import de.htwsaar.util.*;
 
 import java.sql.Connection;
 
@@ -17,8 +18,7 @@ public class App
 {
     public static void main( String[] args )
     {
-        System.out.println( "Hello World!" );
-
+        DatabaseMigration.migrate();
         try {
             Connection conn = SQLConnection.open();
             var empRepo = new EmployeeRepository(conn);
