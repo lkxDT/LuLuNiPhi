@@ -4,6 +4,7 @@ package de.htwsaar.communication;
 import java.util.Scanner;
 import de.htwsaar.application.*;
 import de.htwsaar.domain.Employee;
+import de.htwsaar.domain.Skill;
 
 public class UI {
     private final Scanner inputScanner;
@@ -108,7 +109,11 @@ public class UI {
                 "3. change\n");
 
         switch (this.getInputNumber(3)) {
-            case 1 -> System.out.println("placeholder: show all skills");
+            case 1 -> {
+                for(Skill skill : skillService.getAllSkills()) {
+                    System.out.println(skill);
+                }
+            }
             case 2 -> System.out.println("placeholder: add skill");
             case 3 -> System.out.println("placeholder: change skill");
         }

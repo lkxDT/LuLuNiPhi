@@ -22,4 +22,9 @@ public class Skill {
     public String getCategory() {
         return this.category;
     }
+
+    @Override
+    public String toString() {
+        return String.format("%4d | %25s | %25s", this.getId(), this.getName(), this.getCategory());
+    }
 }

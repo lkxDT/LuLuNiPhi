@@ -1,5 +1,6 @@
 package de.htwsaar.application;
 
+import java.util.List;
 import de.htwsaar.domain.Skill;
 import de.htwsaar.repository.EmployeeSkillRepository;
 import de.htwsaar.repository.SkillRepository;
@@ -21,6 +22,14 @@ public class SkillService {
      */
     public  Skill createSkill(String name, String category) {
         return skillRepo.save(name, category);
+    }
+
+    /**
+     *
+     * @return List of all entries in Skills
+     */
+    public List<Skill> getAllSkills() {
+        return skillRepo.findAll();
     }
 
     public void assignSkill(int empId, int skillId, int level, String sinceDate) {

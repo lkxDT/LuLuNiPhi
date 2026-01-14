@@ -1,11 +1,14 @@
 package de.htwsaar.repository;
 
+import de.htwsaar.domain.Employee;
 import de.htwsaar.domain.Skill;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SkillRepository {
 
@@ -38,5 +41,25 @@ public class SkillRepository {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public List<Skill> findAll() {
+        List<Skill> result = new ArrayList<>();
+        try(Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM skill")) {
+            while (rs.next()) {
+                result.add(new Skill(
+                        rs.getInt("id"),
+                        rs.getString("skill_name"),
+                        rs.getString("category")
+                ));
+
+                //..
+
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return result;
     }
 }
