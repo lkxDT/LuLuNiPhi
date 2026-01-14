@@ -114,8 +114,11 @@ public class UI {
                 System.out.print("New Employee: \nPlease enter the amount of hours the employee works in a week: ");
                 workingHours = inputScanner.nextInt();
 
-                try(empService.createEmployee(firstName, lastName, email, role, status, hireDate, workingHours);) {
+                try {
+                    empService.createEmployee(firstName, lastName, email, role, status, hireDate, workingHours);
                     System.out.println("Employee successfully");
+                } catch (RuntimeException e) {
+                    System.out.println("Employee creation failed");
                 }
 
             }

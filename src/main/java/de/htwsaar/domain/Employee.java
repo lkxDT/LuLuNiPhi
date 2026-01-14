@@ -58,7 +58,7 @@ public class Employee {
 
     @Override
     public String toString() {
-        return String.format("%5d | %10s | %10s | %25s | %10s | %8s | %11s | %2d",
+        return String.format("%5d | %15s | %15s | %35s | %10s | %8s | %11s | %2d",
                 this.getID(),
                 this.getFirstName(),
                 this.getLastName(),
