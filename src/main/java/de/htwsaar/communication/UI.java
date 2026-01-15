@@ -6,10 +6,12 @@ import de.htwsaar.application.*;
 import de.htwsaar.domain.Employee;
 import de.htwsaar.domain.Skill;
 
+
 public class UI {
     private final Scanner inputScanner;
     private final EmployeeService empService;
     private final SkillService skillService;
+    private boolean shouldExit;
 
     //Standat Scanner for usage
     public UI(EmployeeService ems, SkillService sks) {
@@ -26,6 +28,7 @@ public class UI {
         this.empService = ems;
         this.skillService = sks;
         this.inputScanner = inputScanner;
+        this.shouldExit = false;
     }
 
     public int getInputNumber(int max) {
@@ -65,19 +68,21 @@ public class UI {
                 "1. Employees\n" +
                 "2. Skills\n" +
                 "3. Certificates\n" +
-                "4. Projects");
+                //"4. Projects\n" +
+                "4. Exit");
 
         try {
             switch (this.getInputNumber(4)) {
                 case 1 -> employeeMenu();
                 case 2 -> skillsMenu();
                 case 3 -> certificatesMenu();
-                case 4 -> projectsMenu();
+                //case 4 -> projectsMenu();
+                case 4 -> System.out.println("Exiting the Program...");
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            startMainMenu();
         }
+        if(!shouldExit) startMainMenu();
     }
 
     /**
@@ -87,9 +92,10 @@ public class UI {
         System.out.println("Employees Menu:\n" +
                 "1. show all\n" +
                 "2. add\n" +
-                "3. change\n");
+                "3. change\n" +
+                "4. return to main\n");
 
-        switch (this.getInputNumber(3)) {
+        switch (this.getInputNumber(4)) {
             case 1 -> {
                 for(Employee emp : empService.getAllEmployees()) {
                     System.out.println(emp);
@@ -123,7 +129,10 @@ public class UI {
 
             }
             case 3 -> System.out.println("placeholder: change employee");
+            case 4 -> shouldExit = true;
         }
+        if(shouldExit) startMainMenu();
+        else employeeMenu();
     }
     /**
      * Opens the Menu for Skill
@@ -132,9 +141,10 @@ public class UI {
         System.out.println("Skills Menu:\n" +
                 "1. show all\n" +
                 "2. add\n" +
-                "3. change\n");
+                "3. change\n" +
+                "4. return to main\n");
 
-        switch (this.getInputNumber(3)) {
+        switch (this.getInputNumber(4)) {
             case 1 -> {
                 for(Skill skill : skillService.getAllSkills()) {
                     System.out.println(skill);
@@ -142,46 +152,26 @@ public class UI {
             }
             case 2 -> System.out.println("placeholder: add skill");
             case 3 -> System.out.println("placeholder: change skill");
+            case 4 -> shouldExit = true;
         }
+        if(shouldExit) startMainMenu();
+        else employeeMenu();
     }
 
     public void certificatesMenu() {
         System.out.println("Certificates Menu:\n" +
                 "1. show all\n" +
                 "2. add\n" +
-                "3. change\n");
+                "3. change\n" +
+                "4. return to main \n");
 
-        switch (this.getInputNumber(3)) {
+        switch (this.getInputNumber(4)) {
             case 1 -> System.out.println("placeholder: show all certificates");
             case 2 -> System.out.println("placeholder: add certificate");
             case 3 -> System.out.println("placeholder: change certificate");
+            case 4 -> shouldExit = true;
         }
-    }
-
-    public void projectsMenu() {
-        System.out.println("Projects Menu:\n" +
-                "1. show all\n" +
-                "2. new project\n" +
-                "3. change employees\n" +
-                "4. change needed skills");
-
-        // Fixed: Adjusted max to 4 to match the options printed above
-        switch (this.getInputNumber(4)) {
-            case 1 -> System.out.println("placeholder: show all projects");
-            case 2 -> newProjectMenu();
-            case 3 -> System.out.println("placeholder: change employees");
-            case 4 -> System.out.println("placeholder: change skills");
-        }
-    }
-
-    public void newProjectMenu() {
-        System.out.println("employee selection for new Project:\n" +
-                "1. manual\n" +
-                "2. automatic");
-
-        switch (this.getInputNumber(2)) {
-            case 1 -> System.out.println("placeholder: manual selection");
-            case 2 -> System.out.println("placeholder: automatic selection");
-        }
+        if(shouldExit) startMainMenu();
+        else employeeMenu();
     }
 }
