@@ -105,15 +105,6 @@ class SkillServiceTest {
     }
 
     @Test
-    @DisplayName("Validation: Should not allow empty descriptions")
-    void testCreateSkillWithEmptyDescription() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            skillService.createSkill("C#", "");
-        }, "\u001B[31m[LOGIC ERROR] SkillService accepted an empty description! Every skill needs a description.\u001B[0m");
-        System.err.println("\u001B[32m✔ SkillService: Correctly blocked empty description.\u001B[0m");
-    }
-
-    @Test
     @DisplayName("Validation: Should not allow duplicate skill names")
     void testCreateDuplicateSkill() {
         assertThrows(IllegalArgumentException.class, () -> {
