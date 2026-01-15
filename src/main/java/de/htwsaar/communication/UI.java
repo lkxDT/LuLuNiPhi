@@ -90,10 +90,10 @@ public class UI {
      */
     public void employeeMenu() {
         System.out.println("Employees Menu:\n" +
-                "1. show all\n" +
-                "2. add\n" +
-                "3. change\n" +
-                "4. return to main\n");
+                "1. Show all\n" +
+                "2. Add\n" +
+                "3. Change\n" +
+                "4. Return to main\n");
 
         switch (this.getInputNumber(4)) {
             case 1 -> {
@@ -139,10 +139,10 @@ public class UI {
      */
     public void skillsMenu() {
         System.out.println("Skills Menu:\n" +
-                "1. show all\n" +
-                "2. add\n" +
-                "3. change\n" +
-                "4. return to main\n");
+                "1. Show all\n" +
+                "2. Add\n" +
+                "3. Change\n" +
+                "4. Return to main\n");
 
         switch (this.getInputNumber(4)) {
             case 1 -> {
@@ -160,10 +160,10 @@ public class UI {
 
     public void certificatesMenu() {
         System.out.println("Certificates Menu:\n" +
-                "1. show all\n" +
-                "2. add\n" +
-                "3. change\n" +
-                "4. return to main \n");
+                "1. Show all\n" +
+                "2. Add\n" +
+                "3. Change\n" +
+                "4. Return to main \n");
 
         switch (this.getInputNumber(4)) {
             case 1 -> System.out.println("placeholder: show all certificates");
