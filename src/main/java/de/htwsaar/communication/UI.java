@@ -37,7 +37,7 @@ public class UI {
                 return -1;
             }
 
-            String input = inputScanner.next();
+            String input = inputScanner.nextLine();
 
             if (input.contains(".") || input.contains(",")) {
                 System.out.println("Please do not use decimals or commas.");
@@ -64,6 +64,7 @@ public class UI {
      * Starts the main menu
      */
     public void startMainMenu() {
+        shouldExit = false;
         System.out.println("Main Menu:\n" +
                 "1. Employees\n" +
                 "2. Skills\n" +
@@ -77,7 +78,10 @@ public class UI {
                 case 2 -> skillsMenu();
                 case 3 -> certificatesMenu();
                 //case 4 -> projectsMenu();
-                case 4 -> System.out.println("Exiting the Program...");
+                case 4 -> {
+                    System.out.println("Exiting the Program...");
+                    shouldExit = true;
+                }
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -106,17 +110,17 @@ public class UI {
                 int workingHours;
 
                 System.out.print("New Employee: \nPlease enter firstname: ");
-                firstName = inputScanner.next();
+                firstName = inputScanner.nextLine();
                 System.out.print("New Employee: \nPlease enter lastname: ");
-                lastName = inputScanner.next();
+                lastName = inputScanner.nextLine();
                 System.out.print("New Employee: \nPlease enter mail address: ");
-                email = inputScanner.next();
+                email = inputScanner.nextLine();
                 System.out.print("New Employee: \nPlease enter a role: ");
-                role = inputScanner.next();
+                role = inputScanner.nextLine();
                 System.out.print("New Employee: \nPlease enter a status for the employee: ");
-                status = inputScanner.next();
+                status = inputScanner.nextLine();
                 System.out.print("New Employee: \nPlease enter the date the employee was hired (yyyy-mm-dd): ");
-                hireDate = inputScanner.next();
+                hireDate = inputScanner.nextLine();
                 System.out.print("New Employee: \nPlease enter the amount of hours the employee works in a week: ");
                 workingHours = inputScanner.nextInt();
 
