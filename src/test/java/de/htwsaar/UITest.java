@@ -175,37 +175,42 @@ class UITest {
     // --- INTEGRATION TESTS ---
 
     @Test
-    @DisplayName("Integration: Add employee and verify they appear in the list")
-    void testAddAndVerifyEmployeeInList() {
-        String input = "1 2 Clara Hahn clara.hahn@firma.de Researcher Active 2018-10-27 20 1 0 0";
+    @DisplayName("Integration: Add Employee and verify Loop + Data Persistence")
+    void testAddEmployeeAndLoopVerification() {
+        String input = "1 2 Clara Hahn clara@test.de Dev Active 2026-01-15 40 1 0 0";
         UI ui = createUIWithInput(input);
         ui.startMainMenu();
+
         String output = outContent.toString();
 
-        try {
-            assertTrue(output.contains("successfully"), "Add action failed");
-            assertTrue(output.contains("Clara") && output.contains("Hahn"), "New employee missing from list");
-            assertTrue(output.contains("Researcher"), "Role not visible in table");
-            System.err.println("\u001B[32m✔ Integration: Full 'Add and List' loop verified successfully\u001B[0m");
-        } catch (AssertionError e) {
-            System.err.println("\u001B[31m✘ Integration Failed: Full loop sequence did not produce expected data\u001B[0m");
-            throw e;
+        assertTrue(output.contains("Employee successfully"),
+                "\u001B[31m[UI ERROR] The success message was never printed. Check try-catch block!\u001B[0m");
+
+
+        int successIndex = output.indexOf("Employee successfully");
+
+        String outputAfterSuccess = output.substring(successIndex);
+        boolean nameFoundInList = outputAfterSuccess.contains("Clara") && outputAfterSuccess.contains("Hahn");
+        if (!nameFoundInList) {
+            fail("\u001B[31m[LOOP OR PERSISTENCE ERROR] 'Employee successfully' was printed, but the list never showed up again. " +
+                    "Menu is likely missing the 'while(running)' loop or the 'Show List' logic is broken.\u001B[0m");
+        }
+
+        System.err.println("\u001B[32m✔ Integration: Full Add-Loop-List cycle verified successfully!\u001B[0m");
+    }
+        @Test
+        @DisplayName("UI: Should catch Service exception and print user-friendly error")
+        void testUICatchesServiceException() {
+            UI ui = createUIWithInput("1 2 Max Power max@test.de Dev Active 2026-01-13 200");
+            ui.startMainMenu();
+            String output = outContent.toString();
+
+            try {
+                assertTrue(output.contains("Error") || output.contains("invalid"));
+                System.err.println("\u001B[32m✔ Integration: UI correctly caught Service-layer Exception and notified user\u001B[0m");
+            } catch (AssertionError e) {
+                System.err.println("\u001B[31m✘ Integration Failed: UI crashed or failed to show error for 200-hour input\u001B[0m");
+                throw e;
+            }
         }
     }
-
-    @Test
-    @DisplayName("UI: Should catch Service exception and print user-friendly error")
-    void testUICatchesServiceException() {
-        UI ui = createUIWithInput("1 2 Max Power max@test.de Dev Active 2026-01-13 200");
-        ui.startMainMenu();
-        String output = outContent.toString();
-
-        try {
-            assertTrue(output.contains("Error") || output.contains("invalid"));
-            System.err.println("\u001B[32m✔ Integration: UI correctly caught Service-layer Exception and notified user\u001B[0m");
-        } catch (AssertionError e) {
-            System.err.println("\u001B[31m✘ Integration Failed: UI crashed or failed to show error for 200-hour input\u001B[0m");
-            throw e;
-        }
-    }
-}

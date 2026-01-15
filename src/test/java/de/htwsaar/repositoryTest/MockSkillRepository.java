@@ -15,6 +15,10 @@ public class MockSkillRepository extends SkillRepository {
         skills.add(new Skill(2, "SQL", "Database Query Language"));
     }
 
+    @Override
+    public List<Skill> findAll() {
+        return new ArrayList<>(this.skills);
+    }
 
     @Override
     public Skill save(String name, String description) {
