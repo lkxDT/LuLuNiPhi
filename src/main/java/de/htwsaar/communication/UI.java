@@ -96,12 +96,13 @@ public class UI {
         System.out.println("Employees Menu:\n" +
                 "1. Show all\n" +
                 "2. Add\n" +
-                "3. Change\n" +
-                "4. Return to main\n");
+                "3. Search\n" +
+                "4. Change\n" +
+                "5. Return to main\n");
 
-        switch (this.getInputNumber(4)) {
+        switch (this.getInputNumber(5)) {
             case 1 -> {
-                for(Employee emp : empService.getAllEmployees()) {
+                for (Employee emp : empService.findAllEmployees()) {
                     System.out.println(emp);
                 }
             }
@@ -132,12 +133,32 @@ public class UI {
                 }
 
             }
-            case 3 -> System.out.println("placeholder: change employee");
-            case 4 -> shouldExit = true;
+            case 3 -> employeeSearchMenu();
+            case 4 -> System.out.println("Placeholder:");
+            case 5 -> shouldExit = true;
         }
         if(shouldExit) startMainMenu();
         else employeeMenu();
     }
+
+    public void employeeSearchMenu() {
+        System.out.println("Search Employee:\n" +
+                "1. By ID\n" +
+                "2. Return to employee\n");
+
+        switch (this.getInputNumber(2)) {
+            case 1 -> {
+                System.out.println("Enter ID:\n");
+                int id = inputScanner.nextInt();
+                empService.findEmployeeByID(id).ifPresentOrElse(
+                        employee -> System.out.println(employee.toString()),
+                        () -> System.out.printf("Employee with ID %d not found\n", id)
+                );
+            }
+            case 2 -> employeeMenu();
+        }
+    }
+
     /**
      * Opens the Menu for Skill
      */
@@ -145,21 +166,50 @@ public class UI {
         System.out.println("Skills Menu:\n" +
                 "1. Show all\n" +
                 "2. Add\n" +
-                "3. Change\n" +
-                "4. Return to main\n");
+                "3. Search\n" +
+                "4. Change\n" +
+                "5. Return to main\n");
 
-        switch (this.getInputNumber(4)) {
+        switch (this.getInputNumber(5)) {
             case 1 -> {
-                for(Skill skill : skillService.getAllSkills()) {
+                for(Skill skill : skillService.findAllSkills()) {
                     System.out.println(skill);
                 }
             }
             case 2 -> System.out.println("placeholder: add skill");
-            case 3 -> System.out.println("placeholder: change skill");
-            case 4 -> shouldExit = true;
+            case 3 -> skillSearchMenu();
+            case 4 -> System.out.println("placeholder: change skill");
+            case 5 -> shouldExit = true;
         }
         if(shouldExit) startMainMenu();
-        else employeeMenu();
+        else skillsMenu();
+    }
+
+    public void skillSearchMenu() {
+        System.out.println("Search Skill:\n" +
+                "1. By ID\n" +
+                "2. By name\n" +
+                "2. Return to employee\n");
+
+        switch (this.getInputNumber(2)) {
+            case 1 -> {
+                System.out.println("Enter ID:\n");
+                int id = inputScanner.nextInt();
+                skillService.findSkillByID(id).ifPresentOrElse(
+                        skill -> System.out.println(skill.toString()),
+                        () -> System.out.printf("Skill with ID %d not found\n", id)
+                );
+            }
+            case 2 -> {
+                System.out.println("Enter name:\n");
+                String name = inputScanner.nextLine();
+                skillService.findSkillByName(name).ifPresentOrElse(
+                        skill -> System.out.println(skill.toString()),
+                        () -> System.out.printf("Skill with name %s not found\n", name)
+                );
+            }
+            case 3 -> skillsMenu();
+        }
     }
 
     public void certificatesMenu() {

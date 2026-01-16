@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class SkillRepository {
 
@@ -40,6 +41,48 @@ public class SkillRepository {
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public Optional<Skill> findByID(int id) {
+        try (PreparedStatement stmt = conn.prepareStatement("select * from skill where id = ?")) {
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if(!rs.next()) {
+                return Optional.empty();
+            }
+
+            return Optional.of(new Skill(
+                    rs.getInt("id"),
+                    rs.getString("skill_name"),
+                    rs.getString("category")
+
+            ));
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error occured");
+
+        }
+    }
+
+    public Optional<Skill> findByName(String name) {
+        try (PreparedStatement stmt = conn.prepareStatement("select * from skill where skill_name = ?")) {
+            stmt.setString(1, name);
+            ResultSet rs = stmt.executeQuery();
+
+            if(!rs.next()) {
+                return Optional.empty();
+            }
+
+            return Optional.of(new Skill(
+                    rs.getInt("id"),
+                    rs.getString("skill_name"),
+                    rs.getString("category")
+
+            ));
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error occured");
+
         }
     }
 

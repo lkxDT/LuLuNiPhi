@@ -1,9 +1,12 @@
 package de.htwsaar.repository;
 
 import de.htwsaar.domain.Employee;
+import de.htwsaar.util.DateFormatChecker;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class EmployeeRepository {
 
@@ -32,6 +35,13 @@ public class EmployeeRepository {
                 "INSERT INTO employee(first_Name,last_Name, mail, role, status, hire_date, working_hours) VALUES (?,?,?,?,?,?,?)",
                 Statement.RETURN_GENERATED_KEYS)) {
             //Assignment Logic
+            if(!email.contains("@") ||
+                    !DateFormatChecker.check(hireDate) ||
+                    workingHours < 0 ||
+                    workingHours > 168) {
+                throw new IllegalArgumentException("invalid data");
+            }
+
             stmt.setString(1, firstName);
             stmt.setString(2, lastName);
             stmt.setString(3,email);
@@ -50,6 +60,31 @@ public class EmployeeRepository {
         }
     }
 
+    public Optional<Employee> findByID (int id) {
+        try (PreparedStatement stmt = conn.prepareStatement("select * from employee where id = ?")) {
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if(!rs.next()) {
+                return Optional.empty();
+            }
+
+            return Optional.of(new Employee(
+                    rs.getInt("id"),
+                    rs.getString("first_Name"),
+                    rs.getString("last_Name"),
+                    rs.getString("mail"),
+                    rs.getString("role"),
+                    rs.getString("status"),
+                    rs.getString("hire_date"),
+                    rs.getInt("working_hours")
+            ));
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error occured");
+
+        }
+    }
+
     /**
      *
      * @return List of all employees
@@ -59,6 +94,7 @@ public class EmployeeRepository {
         try(Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM employee")) {
             while (rs.next()) {
+
                 result.add(new Employee(
                         rs.getInt("id"),
                         rs.getString("first_Name"),

@@ -1,6 +1,8 @@
 package de.htwsaar.application;
 
 import java.util.List;
+import java.util.Optional;
+
 import de.htwsaar.domain.Employee;
 import de.htwsaar.repository.EmployeeRepository;
 
@@ -55,7 +57,11 @@ public class EmployeeService {
         return value == null || value.isBlank();
     }
 
-    public List<Employee> getAllEmployees() {
+    public List<Employee> findAllEmployees() {
         return repo.findAll();
+    }
+
+    public Optional<Employee> findEmployeeByID(int id) {
+        return repo.findByID(id);
     }
 }
