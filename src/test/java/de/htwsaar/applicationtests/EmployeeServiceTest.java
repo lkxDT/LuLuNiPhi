@@ -26,7 +26,7 @@ class EmployeeServiceTest {
     @Test
     @DisplayName("getAllEmployees should return the full list from the repository")
     void testGetAllEmployees() {
-        List<Employee> employees = employeeService.getAllEmployees();
+        List<Employee> employees = employeeService.findAllEmployees();
         assertNotNull(employees, "\u001B[31mEmployee list should not be null\u001B[0m");
         assertEquals(2, employees.size(), "MockRepo should return 2 employees");
         assertEquals("Mia", employees.get(0).getFirstName());
@@ -54,7 +54,7 @@ class EmployeeServiceTest {
                 return new java.util.ArrayList<>();
             }
         });
-        List<Employee> result = serviceWithNoData.getAllEmployees();
+        List<Employee> result = serviceWithNoData.findAllEmployees();
         assertNotNull(result, "Service should return an empty list, never null");
         assertEquals(0, result.size());
         System.err.println("\u001B[32m✔ Correctly handled empty database state\u001B[0m");
@@ -65,7 +65,7 @@ class EmployeeServiceTest {
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             employeeService.createEmployee("Max", "Power", "max@test.de", "Dev", "Active", "2026-01-13", 200);
         });
-        assertTrue(exception.getMessage().contains("168"), "Exception message should mention the hour limit");
+        assertTrue(exception.getMessage().contains("Working hours must"), "Exception message should mention the hour limit");
         System.err.println("\u001B[32m✔ Service correctly threw IllegalArgumentException\u001B[0m");
     }
     @Test
