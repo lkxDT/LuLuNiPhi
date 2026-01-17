@@ -41,4 +41,45 @@ public class CertificateRepository {
 
         return result;
     }
+    public Certificate save(String name,
+                            String category,
+                            String issuerType,
+                            boolean requiresRenewal,
+                            Integer renewalCycleMonths,
+                            String description) {
+
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "INSERT INTO certificate(name, category, issuer_type, requires_renewal, renewal_cycle_months, description) " +
+                        "VALUES (?, ?, ?, ?, ?, ?)",
+                Statement.RETURN_GENERATED_KEYS)) {
+
+            stmt.setString(1, name);
+            stmt.setString(2, category);
+            stmt.setString(3, issuerType);
+            stmt.setInt(4, requiresRenewal ? 1 : 0);
+
+            if (renewalCycleMonths == null) {
+                stmt.setNull(5, Types.INTEGER);
+            } else {
+                stmt.setInt(5, renewalCycleMonths);
+            }
+
+            if (description == null || description.isBlank()) {
+                stmt.setNull(6, Types.VARCHAR);
+            } else {
+                stmt.setString(6, description);
+            }
+
+            stmt.executeUpdate();
+
+            try (ResultSet keys = stmt.getGeneratedKeys()) {
+                keys.next();
+                int id = keys.getInt(1);
+                return new Certificate(id, name, category, issuerType, requiresRenewal, renewalCycleMonths, description);
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error occured", e);
+        }
+    }
 }

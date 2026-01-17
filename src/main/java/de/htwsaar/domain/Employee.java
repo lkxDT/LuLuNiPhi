@@ -24,7 +24,7 @@ public class Employee {
         this.workingHours = workingHours;
     }
 
-    public int getID() {
+    public int getId() {
         return this.id;
     }
 
@@ -59,7 +59,7 @@ public class Employee {
     @Override
     public String toString() {
         return String.format("%5d | %15s | %15s | %35s | %10s | %8s | %11s | %2d",
-                this.getID(),
+                this.getId(),
                 this.getFirstName(),
                 this.getLastName(),
                 this.getEmail(),

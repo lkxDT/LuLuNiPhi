@@ -106,9 +106,37 @@ public class UI {
 
         switch (this.getInputNumber(5)) {
             case 1 -> {
-                for (Employee emp : empService.findAllEmployees()) {
-                    System.out.println(emp);
+                var employees = empService.findAllEmployees();
+
+                if (employees.isEmpty()) {
+                    System.out.println("No employees found.");
+                    return;
                 }
+
+                System.out.println(
+                        "--------------------------------------------------------------------------------------------------------------");
+                System.out.printf(
+                        "%-3s | %-15s | %-15s | %-30s | %-12s | %-12s | %-5s%n",
+                        "ID", "First name", "Last name", "Email", "Role", "Status", "Hrs");
+                System.out.println(
+                        "--------------------------------------------------------------------------------------------------------------");
+
+                for (Employee emp : employees) {
+                    System.out.printf(
+                            "%-3d | %-15s | %-15s | %-30s | %-12s | %-12s | %-5d%n",
+                            emp.getId(),
+                            emp.getFirstName(),
+                            emp.getLastName(),
+                            emp.getEmail(),
+                            emp.getRole(),
+                            emp.getStatus(),
+                            emp.getWorkingHours()
+                    );
+                }
+
+                System.out.println(
+                        "--------------------------------------------------------------------------------------------------------------");
+
             }
             case 2 -> {
                 String firstName, lastName, role, status, hireDate;
@@ -260,7 +288,45 @@ public class UI {
                             "---------------------------------------------------------------------------------------------");
                 }
             }
-            case 2 -> System.out.println("placeholder: add certificate");
+            case 2 -> {
+                System.out.print("New Certificate:\nPlease enter certificate name: ");
+                String name = inputScanner.nextLine();
+
+                System.out.print("Please enter category (e.g. Quality, Security, Regulatory): ");
+                String category = inputScanner.nextLine();
+
+                System.out.print("Please enter issuer type (e.g. ISO, IEC, Regulation, Audit): ");
+                String issuerType = inputScanner.nextLine();
+
+                System.out.print("Requires renewal? (y/n): ");
+                String renewalInput = inputScanner.nextLine().trim().toLowerCase();
+                boolean requiresRenewal = renewalInput.equals("y") || renewalInput.equals("yes");
+
+                Integer renewalCycleMonths = null;
+                if (requiresRenewal) {
+                    System.out.print("Renewal cycle in months (e.g. 12, 24, 36): ");
+                    String monthsStr = inputScanner.nextLine().trim();
+                    try {
+                        renewalCycleMonths = Integer.parseInt(monthsStr);
+                    } catch (NumberFormatException e) {
+                        System.out.println("Invalid number. Certificate creation cancelled.");
+                        return;
+                    }
+                }
+
+                System.out.print("Description (optional, press Enter to skip): ");
+                String description = inputScanner.nextLine();
+
+                try {
+                    var created = certificateService.createCertificate(
+                            name, category, issuerType, requiresRenewal, renewalCycleMonths, description
+                    );
+                    System.out.println("Certificate successfully created:");
+                    System.out.println(created);
+                } catch (RuntimeException e) {
+                    System.out.println("Certificate creation failed: " + e.getMessage());
+                }
+            }
             case 3 -> System.out.println("placeholder: change certificate");
             case 4 -> shouldExit = true;
         }
