@@ -15,11 +15,10 @@ public class EmployeeService {
     }
 
     public Employee createEmployee(String firstName, String lastName,
-                                   String email, String role, String status,
+                                   String role, String status,
                                    String hireDate, int workingHours) {
         try {
-
-            if (invalid(firstName) || invalid(lastName) || invalid(email) ||
+            if (invalid(firstName) || invalid(lastName) ||
                     invalid(role) || invalid(status) || invalid(hireDate)) {
                 throw new IllegalArgumentException("All fields must be filled out.");
             }
@@ -32,13 +31,14 @@ public class EmployeeService {
                 throw new IllegalArgumentException("Working hours must not exceed 60 per week.");
             }
 
+            // Email automatisch erzeugen
+            String email = generateUniqueEmail(firstName, lastName);
 
             Employee employee = this.repo.save(firstName, lastName, email, role, status, hireDate, workingHours);
             System.out.println("Employee successfully created: " + employee);
             return employee;
 
         } catch (IllegalArgumentException e) {
-
             String message = e.getMessage();
             if (message.contains("All fields")) {
                 System.out.println("Error: All fields must be filled out.");
@@ -55,6 +55,42 @@ public class EmployeeService {
 
     private boolean invalid(String value) {
         return value == null || value.isBlank();
+    }
+
+    /**
+     * Erzeugt eine standardisierte Firmen-Email:
+     * firstName.lastName@medtech.de
+     */
+    private String generateUniqueEmail(String firstName, String lastName) {
+        String base = normalize(firstName) + "." + normalize(lastName);
+        String domain = "@medtech.de";
+
+        String email = base + domain;
+        int counter = 2;
+
+        while (repo.existsByEmail(email)) {
+            email = base + counter + domain;
+            counter++;
+        }
+
+        return email;
+    }
+
+    /**
+     * Normalisiert Namen für Email-Adressen:
+     * - trim
+     * - lowercase
+     * - entfernt Leerzeichen
+     * - ersetzt deutsche Umlaute/ß
+     */
+    private String normalize(String value) {
+        return value.trim()
+                .toLowerCase()
+                .replace("ä", "ae")
+                .replace("ö", "oe")
+                .replace("ü", "ue")
+                .replace("ß", "ss")
+                .replaceAll("\\s+", "");
     }
 
     public List<Employee> findAllEmployees() {

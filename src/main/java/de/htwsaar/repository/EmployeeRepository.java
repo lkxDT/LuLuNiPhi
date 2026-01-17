@@ -91,8 +91,8 @@ public class EmployeeRepository {
      */
     public List<Employee> findAll() {
         List<Employee> result = new ArrayList<>();
-        try(Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM employee")) {
+        try (Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT * FROM employee")) {
             while (rs.next()) {
 
                 result.add(new Employee(
@@ -105,12 +105,29 @@ public class EmployeeRepository {
                         rs.getString("hire_date"),
                         rs.getInt("working_hours")));
 
-                            //..
+                //..
 
             }
         } catch (SQLException e) {
+            if (e.getMessage().contains("UNIQUE")) {
+                throw new IllegalStateException("Email already exists", e);
+            }
             throw new RuntimeException(e);
         }
         return result;
+    }
+    public boolean existsByEmail(String email) {
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "SELECT 1 FROM employee WHERE mail = ? LIMIT 1")) {
+
+            stmt.setString(1, email);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next(); // true = Mail existiert
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error occured", e);
+        }
     }
 }

@@ -107,31 +107,33 @@ public class UI {
                 }
             }
             case 2 -> {
-                String firstName, lastName, email, role, status, hireDate;
+                String firstName, lastName, role, status, hireDate;
                 int workingHours;
 
                 System.out.print("New Employee: \nPlease enter firstname: ");
                 firstName = inputScanner.nextLine();
+
                 System.out.print("New Employee: \nPlease enter lastname: ");
                 lastName = inputScanner.nextLine();
-                System.out.print("New Employee: \nPlease enter mail address: ");
-                email = inputScanner.nextLine();
+
                 System.out.print("New Employee: \nPlease enter a role: ");
                 role = inputScanner.nextLine();
+
                 System.out.print("New Employee: \nPlease enter a status for the employee: ");
                 status = inputScanner.nextLine();
+
                 System.out.print("New Employee: \nPlease enter the date the employee was hired (yyyy-mm-dd): ");
                 hireDate = inputScanner.nextLine();
+
                 System.out.print("New Employee: \nPlease enter the amount of hours the employee works in a week: ");
-                workingHours = inputScanner.nextInt();
+                workingHours = Integer.parseInt(inputScanner.nextLine());
 
                 try {
-                    empService.createEmployee(firstName, lastName, email, role, status, hireDate, workingHours);
-                    System.out.println("Employee successfully");
+                    empService.createEmployee(firstName, lastName, role, status, hireDate, workingHours);
+                    System.out.println("Employee successfully created");
                 } catch (RuntimeException e) {
-                    System.out.println("Employee creation failed");
+                    System.out.println("Employee creation failed: " + e.getMessage());
                 }
-
             }
             case 3 -> employeeSearchMenu();
             case 4 -> System.out.println("Placeholder:");
