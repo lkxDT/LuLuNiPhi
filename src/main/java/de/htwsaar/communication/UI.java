@@ -5,6 +5,8 @@ import java.util.Scanner;
 import de.htwsaar.application.*;
 import de.htwsaar.domain.Employee;
 import de.htwsaar.domain.Skill;
+import de.htwsaar.application.CertificateService;
+import de.htwsaar.domain.Certificate;
 
 
 public class UI {
@@ -12,10 +14,11 @@ public class UI {
     private final EmployeeService empService;
     private final SkillService skillService;
     private boolean shouldExit;
+    private final CertificateService certificateService;
 
     //Standat Scanner for usage
-    public UI(EmployeeService ems, SkillService sks) {
-        this(new Scanner(System.in), ems, sks);
+    public UI(EmployeeService ems, SkillService sks, CertificateService ces) {
+        this(new Scanner(System.in), ems, sks, ces);
     }
 
     /**
@@ -24,9 +27,10 @@ public class UI {
      * @param ems EmployeeService abstraction
      * @param sks SkillService abstraction
      */
-    public UI(Scanner inputScanner, EmployeeService ems, SkillService sks) {
+    public UI(Scanner inputScanner, EmployeeService ems, SkillService sks, CertificateService ces) {
         this.empService = ems;
         this.skillService = sks;
+        this.certificateService = ces;
         this.inputScanner = inputScanner;
         this.shouldExit = false;
     }
@@ -222,12 +226,45 @@ public class UI {
                 "4. Return to main \n");
 
         switch (this.getInputNumber(4)) {
-            case 1 -> System.out.println("placeholder: show all certificates");
+            case 1 -> {
+                var certs = certificateService.findAllCertificates();
+                if (certs.isEmpty()) {
+                    System.out.println("No certificates found.");
+                } else {
+                    System.out.println(
+                            "---------------------------------------------------------------------------------------------");
+                    System.out.printf(
+                            "%-3s | %-25s | %-12s | %-10s | %-10s | %-15s%n",
+                            "ID", "Name", "Category", "Issuer", "Renewal", "Cycle (months)");
+                    System.out.println(
+                            "---------------------------------------------------------------------------------------------");
+
+                    for (Certificate cert : certs) {
+                        String renewal = cert.isRequiresRenewal() ? "YES" : "NO";
+                        String cycle = cert.getRenewalCycleMonths() != null
+                                ? cert.getRenewalCycleMonths().toString()
+                                : "-";
+
+                        System.out.printf(
+                                "%-3d | %-25s | %-12s | %-10s | %-10s | %-15s%n",
+                                cert.getId(),
+                                cert.getName(),
+                                cert.getCategory(),
+                                cert.getIssuerType(),
+                                renewal,
+                                cycle
+                        );
+                    }
+
+                    System.out.println(
+                            "---------------------------------------------------------------------------------------------");
+                }
+            }
             case 2 -> System.out.println("placeholder: add certificate");
             case 3 -> System.out.println("placeholder: change certificate");
             case 4 -> shouldExit = true;
         }
         if(shouldExit) startMainMenu();
-        else employeeMenu();
+        else certificatesMenu();
     }
 }
