@@ -5,6 +5,7 @@ import de.htwsaar.domain.Certificate;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class CertificateRepository {
 
@@ -40,6 +41,33 @@ public class CertificateRepository {
         }
 
         return result;
+    }
+
+    public Optional<Certificate> findById(int id) {
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "SELECT * FROM certificate WHERE id = ?")) {
+
+            stmt.setInt(1, id);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (!rs.next()) {
+                    return Optional.empty();
+                }
+
+                return Optional.of(new Certificate(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("category"),
+                        rs.getString("issuer_type"),
+                        rs.getInt("requires_renewal") == 1,
+                        (Integer) rs.getObject("renewal_cycle_months"),
+                        rs.getString("description")
+                ));
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error occured", e);
+        }
     }
     public Certificate save(String name,
                             String category,

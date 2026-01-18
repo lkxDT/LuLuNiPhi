@@ -249,11 +249,12 @@ public class UI {
     public void certificatesMenu() {
         System.out.println("Certificates Menu:\n" +
                 "1. Show all\n" +
-                "2. Add\n" +
-                "3. Change\n" +
-                "4. Return to main \n");
+                "2. Show details (by ID)\n" +
+                "3. Add\n" +
+                "4. Change\n" +
+                "5. Return to main \n");
 
-        switch (this.getInputNumber(4)) {
+        switch (this.getInputNumber(5)) {
             case 1 -> {
                 var certs = certificateService.findAllCertificates();
                 if (certs.isEmpty()) {
@@ -289,6 +290,34 @@ public class UI {
                 }
             }
             case 2 -> {
+                System.out.print("Enter certificate ID: ");
+                int id;
+                try {
+                    id = Integer.parseInt(inputScanner.nextLine().trim());
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid ID. Please enter a whole number.");
+                    return;
+                }
+
+                certificateService.findCertificateById(id).ifPresentOrElse(cert -> {
+                    System.out.println("--------------------------------------------------");
+                    System.out.println("Certificate Details");
+                    System.out.println("--------------------------------------------------");
+                    System.out.println("ID: " + cert.getId());
+                    System.out.println("Name: " + cert.getName());
+                    System.out.println("Category: " + cert.getCategory());
+                    System.out.println("Issuer Type: " + cert.getIssuerType());
+                    System.out.println("Requires Renewal: " + (cert.isRequiresRenewal() ? "YES" : "NO"));
+                    System.out.println("Renewal Cycle (months): " +
+                            (cert.getRenewalCycleMonths() != null ? cert.getRenewalCycleMonths() : "-"));
+                    System.out.println("Description: " +
+                            (cert.getDescription() != null && !cert.getDescription().isBlank()
+                                    ? cert.getDescription()
+                                    : "-"));
+                    System.out.println("--------------------------------------------------");
+                }, () -> System.out.println("Certificate with ID " + id + " not found."));
+            }
+            case 3 -> {
                 System.out.print("New Certificate:\nPlease enter certificate name: ");
                 String name = inputScanner.nextLine();
 
@@ -327,8 +356,8 @@ public class UI {
                     System.out.println("Certificate creation failed: " + e.getMessage());
                 }
             }
-            case 3 -> System.out.println("placeholder: change certificate");
-            case 4 -> shouldExit = true;
+            case 4 -> System.out.println("placeholder: change certificate");
+            case 5 -> shouldExit = true;
         }
         if(shouldExit) startMainMenu();
         else certificatesMenu();

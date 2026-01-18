@@ -4,6 +4,7 @@ import de.htwsaar.domain.Certificate;
 import de.htwsaar.repository.CertificateRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public class CertificateService {
 
@@ -45,8 +46,12 @@ public class CertificateService {
                 (description == null ? null : description.trim())
         );
     }
+    public Optional<Certificate> findCertificateById(int id) {
+        return repo.findById(id);
+    }
 
     private boolean invalid(String v) {
         return v == null || v.isBlank();
     }
+
 }
