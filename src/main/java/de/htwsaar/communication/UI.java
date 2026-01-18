@@ -183,10 +183,13 @@ public class UI {
     }
 
     public void showStartupBanner() {
-        System.out.println("========================================");
+        String YELLOW = "\u001B[33m";
+        String RESET = "\u001B[0m";
+
+        System.out.println(YELLOW + "========================================");
         System.out.println("        LuLuNiPhi 2.0");
         System.out.println("   Employee Management System");
-        System.out.println("========================================");
+        System.out.println("========================================" + RESET);
         System.out.println();
     }
 
