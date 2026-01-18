@@ -280,9 +280,54 @@ public class UI {
                     System.out.println(skill);
                 }
             }
-            case 2 -> System.out.println("placeholder: add skill");
+            case 2 -> {
+                System.out.print("New Skill:\nPlease enter skill name: ");
+                String name = inputScanner.nextLine();
+
+                System.out.print("Please enter category: ");
+                String category = inputScanner.nextLine();
+
+                try {
+                    Skill created = skillService.createSkill(name, category);
+                    System.out.println("Skill successfully created:");
+                    System.out.println(created);
+                } catch (RuntimeException e) {
+                    System.out.println("Skill creation failed: " + e.getMessage());
+                }
+            }
             case 3 -> skillSearchMenu();
-            case 4 -> System.out.println("placeholder: change skill");
+            case 4 -> {
+                System.out.print("Enter skill ID to change: ");
+                int id;
+                try {
+                    id = Integer.parseInt(inputScanner.nextLine().trim());
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid ID. Please enter a whole number.");
+                    return;
+                }
+
+                skillService.findSkillByID(id).ifPresentOrElse(skill -> {
+                    System.out.println("Press Enter to keep current value.");
+
+                    System.out.print("Skill name [" + skill.getName() + "]: ");
+                    String newName = inputScanner.nextLine();
+                    if (newName.isBlank()) newName = skill.getName();
+
+                    System.out.print("Category  [" + skill.getCategory() + "]: ");
+                    String newCategory = inputScanner.nextLine();
+                    if (newCategory.isBlank()) newCategory = skill.getCategory();
+
+                    Skill updated = new Skill(skill.getId(), newName.trim(), newCategory.trim());
+
+                    try {
+                        skillService.updateSkill(updated);
+                        System.out.println("Skill updated successfully.");
+                    } catch (RuntimeException e) {
+                        System.out.println("Skill update failed: " + e.getMessage());
+                    }
+
+                }, () -> System.out.println("Skill with ID " + id + " not found."));
+            }
             case 5 -> shouldExit = true;
         }
         if(shouldExit) startMainMenu();

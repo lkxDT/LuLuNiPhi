@@ -23,14 +23,6 @@ public class SkillService {
      * @param category Category of skill
      * @return DomainObject of type Skill
      */
-    public  Skill createSkill(String name, String category) {
-        return skillRepo.save(name, category);
-    }
-
-    /**
-     *
-     * @return List of all entries in Skills
-     */
     public List<Skill> findAllSkills() {
         return skillRepo.findAll();
     }
@@ -45,5 +37,23 @@ public class SkillService {
 
     public void assignSkill(int empId, int skillId, int level, String sinceDate) {
         employeeSkillRepo.assign(empId,skillId, level, sinceDate);
+    }
+
+    public Skill createSkill(String name, String category) {
+        if (invalid(name) || invalid(category)) {
+            throw new IllegalArgumentException("Skill name and category must be filled out.");
+        }
+        return skillRepo.save(name.trim(), category.trim());
+    }
+
+    public void updateSkill(Skill skill) {
+        if (invalid(skill.getName()) || invalid(skill.getCategory())) {
+            throw new IllegalArgumentException("Skill name and category must be filled out.");
+        }
+        skillRepo.update(skill);
+    }
+
+    private boolean invalid(String v) {
+        return v == null || v.isBlank();
     }
 }

@@ -28,7 +28,7 @@ public class SkillRepository {
     public Skill save(String name, String category) {
         try (PreparedStatement stmt =
                      conn.prepareStatement(
-                             "INSERT INTO skill(name, category) VALUES (?, ?)",
+                             "INSERT INTO skill(skill_name, category) VALUES (?, ?)",
                              Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setString(1, name);
@@ -104,5 +104,20 @@ public class SkillRepository {
             throw new RuntimeException(e);
         }
         return result;
+    }
+
+    public void update(Skill skill) {
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "UPDATE skill SET skill_name = ?, category = ? WHERE id = ?")) {
+
+            stmt.setString(1, skill.getName());
+            stmt.setString(2, skill.getCategory());
+            stmt.setInt(3, skill.getId());
+
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error occured", e);
+        }
     }
 }
