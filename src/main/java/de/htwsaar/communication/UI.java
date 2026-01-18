@@ -162,7 +162,86 @@ public class UI {
                 }
             }
             case 3 -> employeeSearchMenu();
-            case 4 -> System.out.println("Placeholder:");
+            case 4 -> {
+                System.out.print("Enter employee ID to change: ");
+                int id;
+                try {
+                    id = Integer.parseInt(inputScanner.nextLine().trim());
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid ID. Please enter a whole number.");
+                    return;
+                }
+
+                empService.findEmployeeByID(id).ifPresentOrElse(emp -> {
+
+                    System.out.println("Press Enter to keep current value.");
+
+                    System.out.print("First name [" + emp.getFirstName() + "]: ");
+                    String firstName = inputScanner.nextLine();
+                    if (firstName.isBlank()) firstName = emp.getFirstName();
+
+                    System.out.print("Last name  [" + emp.getLastName() + "]: ");
+                    String lastName = inputScanner.nextLine();
+                    if (lastName.isBlank()) lastName = emp.getLastName();
+
+                    System.out.print("Role       [" + emp.getRole() + "]: ");
+                    String role = inputScanner.nextLine();
+                    if (role.isBlank()) role = emp.getRole();
+
+                    System.out.print("Status     [" + emp.getStatus() + "]: ");
+                    String status = inputScanner.nextLine();
+                    if (status.isBlank()) status = emp.getStatus();
+
+                    System.out.print("Hire date  [" + emp.getHireDate() + "] (yyyy-mm-dd): ");
+                    String hireDate = inputScanner.nextLine();
+                    if (hireDate.isBlank()) hireDate = emp.getHireDate();
+
+                    Integer workingHours = null;
+                    System.out.print("Working hours [" + emp.getWorkingHours() + "]: ");
+                    String whStr = inputScanner.nextLine().trim();
+                    if (whStr.isBlank()) {
+                        workingHours = emp.getWorkingHours();
+                    } else {
+                        try {
+                            workingHours = Integer.parseInt(whStr);
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid working hours. Update cancelled.");
+                            return;
+                        }
+                    }
+
+                    // Email: optional regenerieren (nur sinnvoll, wenn Name geändert wurde)
+                    String email = emp.getEmail();
+                    if (!firstName.equals(emp.getFirstName()) || !lastName.equals(emp.getLastName())) {
+                        System.out.print("Regenerate email based on the new name? (y/n): ");
+                        String regen = inputScanner.nextLine().trim().toLowerCase();
+                        if (regen.equals("y") || regen.equals("yes")) {
+                            // nutzt die Update-Unique-Logik im Service
+                            email = empService.generateEmailForUpdate(firstName, lastName, emp.getId());
+                            // siehe Hinweis unten!
+                        }
+                    }
+
+                    Employee updated = new Employee(
+                            emp.getId(),
+                            firstName,
+                            lastName,
+                            email,
+                            role,
+                            status,
+                            hireDate,
+                            workingHours
+                    );
+
+                    try {
+                        empService.updateEmployee(updated);
+                        System.out.println("Employee updated successfully.");
+                    } catch (RuntimeException e) {
+                        System.out.println("Employee update failed: " + e.getMessage());
+                    }
+
+                }, () -> System.out.println("Employee with ID " + id + " not found."));
+            }
             case 5 -> shouldExit = true;
         }
         if(shouldExit) startMainMenu();

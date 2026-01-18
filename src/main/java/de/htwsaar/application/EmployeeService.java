@@ -75,6 +75,23 @@ public class EmployeeService {
 
         return email;
     }
+    private String generateUniqueEmailForUpdate(String firstName, String lastName, int employeeId) {
+        String base = normalize(firstName) + "." + normalize(lastName);
+        String domain = "@medtech.de";
+
+        String email = base + domain;
+        int counter = 2;
+
+        while (repo.existsByEmailForOtherEmployee(email, employeeId)) {
+            email = base + counter + domain;
+            counter++;
+        }
+
+        return email;
+    }
+    public String generateEmailForUpdate(String firstName, String lastName, int employeeId) {
+        return generateUniqueEmailForUpdate(firstName, lastName, employeeId);
+    }
 
     /**
      * Normalisiert Namen für Email-Adressen:
@@ -99,5 +116,9 @@ public class EmployeeService {
 
     public Optional<Employee> findEmployeeByID(int id) {
         return repo.findByID(id);
+    }
+
+    public void updateEmployee(Employee employee) {
+        repo.update(employee);
     }
 }

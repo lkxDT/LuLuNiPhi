@@ -130,4 +130,40 @@ public class EmployeeRepository {
             throw new RuntimeException("Database error occured", e);
         }
     }
+    public void update(Employee emp) {
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "UPDATE employee SET " +
+                        "first_Name = ?, last_Name = ?, mail = ?, role = ?, status = ?, hire_date = ?, working_hours = ? " +
+                        "WHERE id = ?")) {
+
+            stmt.setString(1, emp.getFirstName());
+            stmt.setString(2, emp.getLastName());
+            stmt.setString(3, emp.getEmail());
+            stmt.setString(4, emp.getRole());
+            stmt.setString(5, emp.getStatus());
+            stmt.setString(6, emp.getHireDate());
+            stmt.setInt(7, emp.getWorkingHours());
+            stmt.setInt(8, emp.getId());
+
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error occured", e);
+        }
+    }
+    public boolean existsByEmailForOtherEmployee(String email, int employeeId) {
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "SELECT 1 FROM employee WHERE mail = ? AND id <> ? LIMIT 1")) {
+
+            stmt.setString(1, email);
+            stmt.setInt(2, employeeId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error occured", e);
+        }
+    }
 }
