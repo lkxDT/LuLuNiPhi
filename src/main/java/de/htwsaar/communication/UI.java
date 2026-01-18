@@ -64,9 +64,6 @@ public class UI {
         }
     }
 
-    /**
-     * Starts the main menu
-     */
     public void startMainMenu() {
         shouldExit = false;
         System.out.println("Main Menu:\n" +
@@ -93,9 +90,6 @@ public class UI {
         if(!shouldExit) startMainMenu();
     }
 
-    /**
-     * Opens the Menu for Employee
-     */
     public void employeeMenu() {
         System.out.println("Employees Menu:\n" +
                 "1. Show all\n" +
@@ -193,9 +187,6 @@ public class UI {
         }
     }
 
-    /**
-     * Opens the Menu for Skill
-     */
     public void skillsMenu() {
         System.out.println("Skills Menu:\n" +
                 "1. Show all\n" +
@@ -356,7 +347,63 @@ public class UI {
                     System.out.println("Certificate creation failed: " + e.getMessage());
                 }
             }
-            case 4 -> System.out.println("placeholder: change certificate");
+            case 4 -> {
+                System.out.print("Enter certificate ID to change: ");
+                int id;
+
+                try {
+                    id = Integer.parseInt(inputScanner.nextLine().trim());
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid ID.");
+                    return;
+                }
+
+                certificateService.findCertificateById(id).ifPresentOrElse(cert -> {
+
+                    System.out.println("Press Enter to keep current value.");
+
+                    System.out.print("Name [" + cert.getName() + "]: ");
+                    String name = inputScanner.nextLine();
+                    if (!name.isBlank()) cert = new Certificate(
+                            cert.getId(),
+                            name,
+                            cert.getCategory(),
+                            cert.getIssuerType(),
+                            cert.isRequiresRenewal(),
+                            cert.getRenewalCycleMonths(),
+                            cert.getDescription()
+                    );
+
+                    System.out.print("Category [" + cert.getCategory() + "]: ");
+                    String category = inputScanner.nextLine();
+                    if (!category.isBlank()) cert = new Certificate(
+                            cert.getId(),
+                            cert.getName(),
+                            category,
+                            cert.getIssuerType(),
+                            cert.isRequiresRenewal(),
+                            cert.getRenewalCycleMonths(),
+                            cert.getDescription()
+                    );
+
+                    System.out.print("Description [" +
+                            (cert.getDescription() != null ? cert.getDescription() : "-") + "]: ");
+                    String desc = inputScanner.nextLine();
+                    if (!desc.isBlank()) cert = new Certificate(
+                            cert.getId(),
+                            cert.getName(),
+                            cert.getCategory(),
+                            cert.getIssuerType(),
+                            cert.isRequiresRenewal(),
+                            cert.getRenewalCycleMonths(),
+                            desc
+                    );
+
+                    certificateService.updateCertificate(cert);
+                    System.out.println("Certificate updated successfully.");
+
+                }, () -> System.out.println("Certificate not found."));
+            }
             case 5 -> shouldExit = true;
         }
         if(shouldExit) startMainMenu();

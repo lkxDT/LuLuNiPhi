@@ -49,6 +49,9 @@ public class CertificateService {
     public Optional<Certificate> findCertificateById(int id) {
         return repo.findById(id);
     }
+    public void updateCertificate(Certificate cert) {
+        repo.update(cert);
+    }
 
     private boolean invalid(String v) {
         return v == null || v.isBlank();

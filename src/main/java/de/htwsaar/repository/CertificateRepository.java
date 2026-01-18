@@ -69,6 +69,38 @@ public class CertificateRepository {
             throw new RuntimeException("Database error occured", e);
         }
     }
+    public void update(Certificate cert) {
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "UPDATE certificate SET " +
+                        "name = ?, category = ?, issuer_type = ?, " +
+                        "requires_renewal = ?, renewal_cycle_months = ?, description = ? " +
+                        "WHERE id = ?")) {
+
+            stmt.setString(1, cert.getName());
+            stmt.setString(2, cert.getCategory());
+            stmt.setString(3, cert.getIssuerType());
+            stmt.setInt(4, cert.isRequiresRenewal() ? 1 : 0);
+
+            if (cert.getRenewalCycleMonths() == null) {
+                stmt.setNull(5, java.sql.Types.INTEGER);
+            } else {
+                stmt.setInt(5, cert.getRenewalCycleMonths());
+            }
+
+            if (cert.getDescription() == null || cert.getDescription().isBlank()) {
+                stmt.setNull(6, java.sql.Types.VARCHAR);
+            } else {
+                stmt.setString(6, cert.getDescription());
+            }
+
+            stmt.setInt(7, cert.getId());
+
+            stmt.executeUpdate();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Database error occurred", e);
+        }
+    }
     public Certificate save(String name,
                             String category,
                             String issuerType,
