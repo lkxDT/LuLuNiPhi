@@ -3,10 +3,13 @@ package de.htwsaar.communication;
 import java.util.List;
 import java.util.Scanner;
 
-import de.htwsaar.application.*;
+import de.htwsaar.application.CertificateService;
+import de.htwsaar.application.EmployeeService;
+import de.htwsaar.application.SkillService;
+import de.htwsaar.domain.AssignedSkill;
+import de.htwsaar.domain.Certificate;
 import de.htwsaar.domain.Employee;
 import de.htwsaar.domain.Skill;
-import de.htwsaar.domain.Certificate;
 
 public class UI {
     private final Scanner inputScanner;
@@ -15,7 +18,6 @@ public class UI {
     private final CertificateService certificateService;
     private boolean shouldExit;
 
-    // Standard Scanner for usage
     public UI(EmployeeService ems, SkillService sks, CertificateService ces) {
         this(new Scanner(System.in), ems, sks, ces);
     }
@@ -28,9 +30,9 @@ public class UI {
         this.shouldExit = false;
     }
 
-    /* =========================================================
+    /* =======================
        Layout helpers
-       ========================================================= */
+       ======================= */
 
     private void printSection(String title) {
         System.out.println("==================================================");
@@ -112,16 +114,15 @@ public class UI {
                     cert.getCategory(),
                     cert.getIssuerType(),
                     renewal,
-                    cycle
-            );
+                    cycle);
         }
 
         System.out.println("---------------------------------------------------------------------------------------------");
     }
 
-    /* =========================================================
+    /* =======================
        Input helper
-       ========================================================= */
+       ======================= */
 
     public int getInputNumber(int max) {
         while (true) {
@@ -152,9 +153,9 @@ public class UI {
         }
     }
 
-    /* =========================================================
+    /* =======================
        Main menu
-       ========================================================= */
+       ======================= */
 
     public void startMainMenu() {
         shouldExit = false;
@@ -181,9 +182,9 @@ public class UI {
         if (!shouldExit) startMainMenu();
     }
 
-    /* =========================================================
+    /* =======================
        Employees
-       ========================================================= */
+       ======================= */
 
     public void employeeMenu() {
         printSection("Employees");
@@ -191,32 +192,32 @@ public class UI {
         System.out.println("2. Add");
         System.out.println("3. Search");
         System.out.println("4. Change");
-        System.out.println("5. Return to main");
+        System.out.println("5. Employee Skills");
+        System.out.println("6. Return to main");
 
-        switch (this.getInputNumber(5)) {
+        switch (this.getInputNumber(6)) {
             case 1 -> printEmployeeTable(empService.findAllEmployees());
 
             case 2 -> {
                 printSection("Add Employee");
-                String firstName, lastName, role, status, hireDate;
-                int workingHours;
 
                 System.out.print("First name: ");
-                firstName = inputScanner.nextLine();
+                String firstName = inputScanner.nextLine();
 
                 System.out.print("Last name: ");
-                lastName = inputScanner.nextLine();
+                String lastName = inputScanner.nextLine();
 
                 System.out.print("Role: ");
-                role = inputScanner.nextLine();
+                String role = inputScanner.nextLine();
 
                 System.out.print("Status: ");
-                status = inputScanner.nextLine();
+                String status = inputScanner.nextLine();
 
                 System.out.print("Hire date (yyyy-mm-dd): ");
-                hireDate = inputScanner.nextLine();
+                String hireDate = inputScanner.nextLine();
 
                 System.out.print("Working hours per week: ");
+                int workingHours;
                 try {
                     workingHours = Integer.parseInt(inputScanner.nextLine().trim());
                 } catch (NumberFormatException e) {
@@ -236,6 +237,7 @@ public class UI {
 
             case 4 -> {
                 printSection("Change Employee");
+
                 System.out.print("Enter employee ID to change: ");
                 int id;
                 try {
@@ -246,6 +248,7 @@ public class UI {
                 }
 
                 empService.findEmployeeByID(id).ifPresentOrElse(emp -> {
+
                     printInfo("Press Enter to keep current value.");
 
                     System.out.print("First name [" + emp.getFirstName() + "]: ");
@@ -312,7 +315,9 @@ public class UI {
                 }, () -> printError("Employee with ID " + id + " not found."));
             }
 
-            case 5 -> shouldExit = true;
+            case 5 -> employeeSkillsMenu();
+
+            case 6 -> shouldExit = true;
         }
 
         if (shouldExit) startMainMenu();
@@ -352,9 +357,129 @@ public class UI {
         }
     }
 
-    /* =========================================================
+    /* =======================
+       Employee Skills
+       ======================= */
+
+    public void employeeSkillsMenu() {
+        printSection("Employee Skills");
+        System.out.println("1. Assign skill to employee");
+        System.out.println("2. Show skills of employee");
+        System.out.println("3. Return to employees");
+
+        switch (this.getInputNumber(3)) {
+            case 1 -> assignSkillToEmployee();
+            case 2 -> showSkillsOfEmployee();
+            case 3 -> employeeMenu();
+        }
+    }
+
+    private void assignSkillToEmployee() {
+        printSection("Assign Skill to Employee");
+
+        System.out.print("Enter employee ID: ");
+        int empId;
+        try {
+            empId = Integer.parseInt(inputScanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            printError("Invalid employee ID.");
+            return;
+        }
+
+        if (empService.findEmployeeByID(empId).isEmpty()) {
+            printError("Employee with ID " + empId + " not found.");
+            return;
+        }
+
+        printInfo("Available skills:");
+        printSkillTable(skillService.findAllSkills());
+
+        System.out.print("Enter skill ID: ");
+        int skillId;
+        try {
+            skillId = Integer.parseInt(inputScanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            printError("Invalid skill ID.");
+            return;
+        }
+
+        if (skillService.findSkillByID(skillId).isEmpty()) {
+            printError("Skill with ID " + skillId + " not found.");
+            return;
+        }
+
+        System.out.print("Enter level (1-5): ");
+        int level;
+        try {
+            level = Integer.parseInt(inputScanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            printError("Invalid level.");
+            return;
+        }
+
+        if (level < 1 || level > 5) {
+            printError("Level must be between 1 and 5.");
+            return;
+        }
+
+        System.out.print("Since date (yyyy-mm-dd): ");
+        String sinceDate = inputScanner.nextLine().trim();
+        if (sinceDate.isBlank()) {
+            printError("Since date must not be empty.");
+            return;
+        }
+
+        try {
+            skillService.assignSkill(empId, skillId, level, sinceDate);
+            printInfo("Skill successfully assigned to employee.");
+        } catch (RuntimeException e) {
+            printError("Assignment failed: " + e.getMessage());
+        }
+    }
+
+    private void showSkillsOfEmployee() {
+        printSection("Skills of Employee");
+
+        System.out.print("Enter employee ID: ");
+        int empId;
+        try {
+            empId = Integer.parseInt(inputScanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            printError("Invalid employee ID.");
+            return;
+        }
+
+        if (empService.findEmployeeByID(empId).isEmpty()) {
+            printError("Employee with ID " + empId + " not found.");
+            return;
+        }
+
+        List<AssignedSkill> skills = skillService.findSkillsOfEmployee(empId);
+        if (skills.isEmpty()) {
+            printInfo("No skills assigned to this employee.");
+            return;
+        }
+
+        System.out.println("-------------------------------------------------------------------------------------");
+        System.out.printf("%-3s | %-25s | %-20s | %-5s | %-10s%n",
+                "ID", "Skill", "Category", "Lvl", "Since");
+        System.out.println("-------------------------------------------------------------------------------------");
+
+        for (AssignedSkill s : skills) {
+            System.out.printf("%-3d | %-25s | %-20s | %-5d | %-10s%n",
+                    s.getSkillId(),
+                    s.getName(),
+                    s.getCategory(),
+                    s.getLevel(),
+                    s.getSinceDate());
+        }
+
+        System.out.println("-------------------------------------------------------------------------------------");
+    }
+
+    /* =======================
        Skills
-       ========================================================= */
+       ======================= */
 
     public void skillsMenu() {
         printSection("Skills");
@@ -369,6 +494,7 @@ public class UI {
 
             case 2 -> {
                 printSection("Add Skill");
+
                 System.out.print("Skill name: ");
                 String name = inputScanner.nextLine();
 
@@ -388,6 +514,7 @@ public class UI {
 
             case 4 -> {
                 printSection("Change Skill");
+
                 System.out.print("Enter skill ID to change: ");
                 int id;
                 try {
@@ -398,6 +525,7 @@ public class UI {
                 }
 
                 skillService.findSkillByID(id).ifPresentOrElse(skill -> {
+
                     printInfo("Press Enter to keep current value.");
 
                     System.out.print("Skill name [" + skill.getName() + "]: ");
@@ -464,9 +592,9 @@ public class UI {
         }
     }
 
-    /* =========================================================
+    /* =======================
        Certificates
-       ========================================================= */
+       ======================= */
 
     public void certificatesMenu() {
         printSection("Certificates");
@@ -510,6 +638,7 @@ public class UI {
 
             case 3 -> {
                 printSection("Add Certificate");
+
                 System.out.print("Certificate name: ");
                 String name = inputScanner.nextLine();
 
@@ -539,11 +668,10 @@ public class UI {
                 String description = inputScanner.nextLine();
 
                 try {
-                    var created = certificateService.createCertificate(
+                    Certificate created = certificateService.createCertificate(
                             name, category, issuerType, requiresRenewal, renewalCycleMonths, description
                     );
                     printInfo("Certificate successfully created.");
-                    // Optional: show details right away
                     System.out.println(created);
                 } catch (RuntimeException e) {
                     printError("Certificate creation failed: " + e.getMessage());
@@ -562,6 +690,7 @@ public class UI {
                 }
 
                 certificateService.findCertificateById(id).ifPresentOrElse(cert -> {
+
                     printInfo("Press Enter to keep current value.");
 
                     System.out.print("Name [" + cert.getName() + "]: ");

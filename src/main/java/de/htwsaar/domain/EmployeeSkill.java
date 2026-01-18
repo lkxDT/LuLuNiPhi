@@ -1,5 +1,11 @@
 package de.htwsaar.domain;
 
+import de.htwsaar.domain.AssignedSkill;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
 public class EmployeeSkill {
     private final int employeeId;
     private final int skillId;
@@ -18,3 +24,5 @@ public class EmployeeSkill {
     public int getLevel() { return level; }
     public String getSinceDate() { return sinceDate; }
 }
+
+

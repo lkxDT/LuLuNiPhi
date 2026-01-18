@@ -2,6 +2,7 @@ package de.htwsaar.application;
 
 import java.util.List;
 import java.util.Optional;
+import de.htwsaar.domain.AssignedSkill;
 
 import de.htwsaar.domain.Employee;
 import de.htwsaar.domain.Skill;
@@ -51,6 +52,10 @@ public class SkillService {
             throw new IllegalArgumentException("Skill name and category must be filled out.");
         }
         skillRepo.update(skill);
+    }
+
+    public List<AssignedSkill> findSkillsOfEmployee(int empId) {
+        return employeeSkillRepo.findSkillsByEmployeeId(empId);
     }
 
     private boolean invalid(String v) {
