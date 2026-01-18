@@ -365,12 +365,14 @@ public class UI {
         printSection("Employee Skills");
         System.out.println("1. Assign skill to employee");
         System.out.println("2. Show skills of employee");
-        System.out.println("3. Return to employees");
+        System.out.println("3. Update skill assignment");
+        System.out.println("4. Return to employees");
 
-        switch (this.getInputNumber(3)) {
+        switch (this.getInputNumber(4)) {
             case 1 -> assignSkillToEmployee();
             case 2 -> showSkillsOfEmployee();
-            case 3 -> employeeMenu();
+            case 3 -> updateSkillAssignment();
+            case 4 -> employeeMenu();
         }
     }
 
@@ -434,6 +436,92 @@ public class UI {
             printInfo("Skill successfully assigned to employee.");
         } catch (RuntimeException e) {
             printError("Assignment failed: " + e.getMessage());
+        }
+    }
+
+    private void updateSkillAssignment() {
+        printSection("Update Skill Assignment");
+
+        System.out.print("Enter employee ID: ");
+        int empId;
+        try {
+            empId = Integer.parseInt(inputScanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            printError("Invalid employee ID.");
+            return;
+        }
+
+        if (empService.findEmployeeByID(empId).isEmpty()) {
+            printError("Employee with ID " + empId + " not found.");
+            return;
+        }
+
+        // Show current skills for the employee (so user can pick a skillId)
+        List<AssignedSkill> current = skillService.findSkillsOfEmployee(empId);
+        if (current.isEmpty()) {
+            printInfo("No skills assigned to this employee.");
+            return;
+        }
+
+        System.out.println("-------------------------------------------------------------------------------------");
+        System.out.printf("%-3s | %-25s | %-20s | %-5s | %-10s%n",
+                "ID", "Skill", "Category", "Lvl", "Since");
+        System.out.println("-------------------------------------------------------------------------------------");
+        for (AssignedSkill s : current) {
+            System.out.printf("%-3d | %-25s | %-20s | %-5d | %-10s%n",
+                    s.getSkillId(), s.getName(), s.getCategory(), s.getLevel(), s.getSinceDate());
+        }
+        System.out.println("-------------------------------------------------------------------------------------");
+
+        System.out.print("Enter skill ID to update: ");
+        int skillId;
+        try {
+            skillId = Integer.parseInt(inputScanner.nextLine().trim());
+        } catch (NumberFormatException e) {
+            printError("Invalid skill ID.");
+            return;
+        }
+
+        AssignedSkill existing = null;
+        for (AssignedSkill s : current) {
+            if (s.getSkillId() == skillId) {
+                existing = s;
+                break;
+            }
+        }
+        if (existing == null) {
+            printError("This skill is not assigned to the employee.");
+            return;
+        }
+
+        System.out.println("Press Enter to keep current value.");
+
+        // Level
+        int newLevel = existing.getLevel();
+        System.out.print("Level [" + existing.getLevel() + "] (1-5): ");
+        String lvlStr = inputScanner.nextLine().trim();
+        if (!lvlStr.isBlank()) {
+            try {
+                newLevel = Integer.parseInt(lvlStr);
+            } catch (NumberFormatException e) {
+                printError("Invalid level.");
+                return;
+            }
+        }
+
+        // Since date
+        String newSince = existing.getSinceDate();
+        System.out.print("Since date [" + existing.getSinceDate() + "] (yyyy-mm-dd): ");
+        String sinceStr = inputScanner.nextLine().trim();
+        if (!sinceStr.isBlank()) {
+            newSince = sinceStr;
+        }
+
+        try {
+            skillService.updateSkillAssignment(empId, skillId, newLevel, newSince);
+            printInfo("Skill assignment updated successfully.");
+        } catch (RuntimeException e) {
+            printError("Update failed: " + e.getMessage());
         }
     }
 

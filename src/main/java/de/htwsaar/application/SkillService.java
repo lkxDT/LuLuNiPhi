@@ -68,4 +68,16 @@ public class SkillService {
     private boolean invalid(String v) {
         return v == null || v.isBlank();
     }
+
+    public void updateSkillAssignment(int empId, int skillId, int level, String sinceDate) {
+        // optional: simple range check
+        if (level < 1 || level > 5) {
+            throw new IllegalArgumentException("Level must be between 1 and 5.");
+        }
+        if (sinceDate == null || sinceDate.isBlank()) {
+            throw new IllegalArgumentException("Since date must not be empty.");
+        }
+
+        employeeSkillRepo.updateAssignment(empId, skillId, level, sinceDate);
+    }
 }

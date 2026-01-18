@@ -85,4 +85,23 @@ public class EmployeeSkillRepository {
             throw new RuntimeException("Database error occured", e);
         }
     }
+    public void updateAssignment(int employeeId, int skillId, int level, String sinceDate) {
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "UPDATE employee_skill SET level = ?, since_date = ? " +
+                        "WHERE employee_id = ? AND skill_id = ?")) {
+
+            stmt.setInt(1, level);
+            stmt.setString(2, sinceDate);
+            stmt.setInt(3, employeeId);
+            stmt.setInt(4, skillId);
+
+            int updatedRows = stmt.executeUpdate();
+            if (updatedRows == 0) {
+                throw new IllegalStateException("No assignment found for this employee and skill.");
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error occured", e);
+        }
+    }
 }
