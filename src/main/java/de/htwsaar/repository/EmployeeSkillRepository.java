@@ -70,4 +70,19 @@ public class EmployeeSkillRepository {
 
         return result;
     }
+    public boolean existsAssignment(int employeeId, int skillId) {
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "SELECT 1 FROM employee_skill WHERE employee_id = ? AND skill_id = ? LIMIT 1")) {
+
+            stmt.setInt(1, employeeId);
+            stmt.setInt(2, skillId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error occured", e);
+        }
+    }
 }

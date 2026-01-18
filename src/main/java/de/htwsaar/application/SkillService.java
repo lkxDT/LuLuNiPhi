@@ -37,7 +37,14 @@ public class SkillService {
     }
 
     public void assignSkill(int empId, int skillId, int level, String sinceDate) {
-        employeeSkillRepo.assign(empId,skillId, level, sinceDate);
+
+        if (employeeSkillRepo.existsAssignment(empId, skillId)) {
+            throw new IllegalStateException(
+                    "This skill is already assigned to the employee."
+            );
+        }
+
+        employeeSkillRepo.assign(empId, skillId, level, sinceDate);
     }
 
     public Skill createSkill(String name, String category) {
