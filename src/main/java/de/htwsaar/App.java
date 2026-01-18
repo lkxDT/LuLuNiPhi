@@ -32,6 +32,7 @@ public class App
 
             var userIn = new UI(empService, skillService, certService);
 
+            userIn.showStartupBanner();
             userIn.startMainMenu();
 
         } catch (SQLException e){

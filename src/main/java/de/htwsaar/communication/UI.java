@@ -182,6 +182,14 @@ public class UI {
         if (!shouldExit) startMainMenu();
     }
 
+    public void showStartupBanner() {
+        System.out.println("========================================");
+        System.out.println("        LuLuNiPhi 2.0");
+        System.out.println("   Employee Management System");
+        System.out.println("========================================");
+        System.out.println();
+    }
+
     /* =======================
        Employees
        ======================= */
