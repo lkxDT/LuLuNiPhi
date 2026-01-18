@@ -1,32 +1,25 @@
-
 package de.htwsaar.communication;
 
+import java.util.List;
 import java.util.Scanner;
+
 import de.htwsaar.application.*;
 import de.htwsaar.domain.Employee;
 import de.htwsaar.domain.Skill;
-import de.htwsaar.application.CertificateService;
 import de.htwsaar.domain.Certificate;
-
 
 public class UI {
     private final Scanner inputScanner;
     private final EmployeeService empService;
     private final SkillService skillService;
-    private boolean shouldExit;
     private final CertificateService certificateService;
+    private boolean shouldExit;
 
-    //Standat Scanner for usage
+    // Standard Scanner for usage
     public UI(EmployeeService ems, SkillService sks, CertificateService ces) {
         this(new Scanner(System.in), ems, sks, ces);
     }
 
-    /**
-     * Constructor for the UI Object
-     * @param inputScanner Scanner for Input (for tests)
-     * @param ems EmployeeService abstraction
-     * @param sks SkillService abstraction
-     */
     public UI(Scanner inputScanner, EmployeeService ems, SkillService sks, CertificateService ces) {
         this.empService = ems;
         this.skillService = sks;
@@ -34,6 +27,101 @@ public class UI {
         this.inputScanner = inputScanner;
         this.shouldExit = false;
     }
+
+    /* =========================================================
+       Layout helpers
+       ========================================================= */
+
+    private void printSection(String title) {
+        System.out.println("==================================================");
+        System.out.println(title);
+        System.out.println("==================================================");
+    }
+
+    private void printInfo(String msg) {
+        System.out.println("[INFO] " + msg);
+    }
+
+    private void printError(String msg) {
+        System.out.println("[ERROR] " + msg);
+    }
+
+    private void printEmployeeTable(List<Employee> employees) {
+        if (employees == null || employees.isEmpty()) {
+            printInfo("No employees found.");
+            return;
+        }
+
+        System.out.println("--------------------------------------------------------------------------------------------------------------");
+        System.out.printf("%-3s | %-15s | %-15s | %-30s | %-12s | %-12s | %-5s%n",
+                "ID", "First name", "Last name", "Email", "Role", "Status", "Hrs");
+        System.out.println("--------------------------------------------------------------------------------------------------------------");
+
+        for (Employee emp : employees) {
+            System.out.printf("%-3d | %-15s | %-15s | %-30s | %-12s | %-12s | %-5d%n",
+                    emp.getId(),
+                    emp.getFirstName(),
+                    emp.getLastName(),
+                    emp.getEmail(),
+                    emp.getRole(),
+                    emp.getStatus(),
+                    emp.getWorkingHours());
+        }
+
+        System.out.println("--------------------------------------------------------------------------------------------------------------");
+    }
+
+    private void printSkillTable(List<Skill> skills) {
+        if (skills == null || skills.isEmpty()) {
+            printInfo("No skills found.");
+            return;
+        }
+
+        System.out.println("--------------------------------------------------------------");
+        System.out.printf("%-3s | %-25s | %-20s%n", "ID", "Skill name", "Category");
+        System.out.println("--------------------------------------------------------------");
+
+        for (Skill skill : skills) {
+            System.out.printf("%-3d | %-25s | %-20s%n",
+                    skill.getId(),
+                    skill.getName(),
+                    skill.getCategory());
+        }
+
+        System.out.println("--------------------------------------------------------------");
+    }
+
+    private void printCertificateTable(List<Certificate> certs) {
+        if (certs == null || certs.isEmpty()) {
+            printInfo("No certificates found.");
+            return;
+        }
+
+        System.out.println("---------------------------------------------------------------------------------------------");
+        System.out.printf("%-3s | %-25s | %-12s | %-10s | %-10s | %-15s%n",
+                "ID", "Name", "Category", "Issuer", "Renewal", "Cycle (months)");
+        System.out.println("---------------------------------------------------------------------------------------------");
+
+        for (Certificate cert : certs) {
+            String renewal = cert.isRequiresRenewal() ? "YES" : "NO";
+            String cycle = cert.getRenewalCycleMonths() != null ? cert.getRenewalCycleMonths().toString() : "-";
+
+            System.out.printf("%-3d | %-25s | %-12s | %-10s | %-10s | %-15s%n",
+                    cert.getId(),
+                    cert.getName(),
+                    cert.getCategory(),
+                    cert.getIssuerType(),
+                    renewal,
+                    cycle
+            );
+        }
+
+        System.out.println("---------------------------------------------------------------------------------------------");
+    }
+
+    /* =========================================================
+       Input helper
+       ========================================================= */
 
     public int getInputNumber(int max) {
         while (true) {
@@ -44,7 +132,7 @@ public class UI {
             String input = inputScanner.nextLine();
 
             if (input.contains(".") || input.contains(",")) {
-                System.out.println("Please do not use decimals or commas.");
+                printError("Please do not use decimals or commas.");
                 continue;
             }
 
@@ -52,129 +140,113 @@ public class UI {
                 int numerizedInput = Integer.parseInt(input);
 
                 if (numerizedInput < 1 || numerizedInput > max) {
-                    System.out.println("Please enter a number between 1 and " + max + ".");
+                    printError("Please enter a number between 1 and " + max + ".");
                     continue;
                 }
 
                 return numerizedInput;
 
             } catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a whole number.");
+                printError("Invalid input. Please enter a whole number.");
             }
         }
     }
 
+    /* =========================================================
+       Main menu
+       ========================================================= */
+
     public void startMainMenu() {
         shouldExit = false;
-        System.out.println("Main Menu:\n" +
-                "1. Employees\n" +
-                "2. Skills\n" +
-                "3. Certificates\n" +
-                //"4. Projects\n" +
-                "4. Exit");
+        printSection("Main Menu");
+        System.out.println("1. Employees");
+        System.out.println("2. Skills");
+        System.out.println("3. Certificates");
+        System.out.println("4. Exit");
 
         try {
             switch (this.getInputNumber(4)) {
                 case 1 -> employeeMenu();
                 case 2 -> skillsMenu();
                 case 3 -> certificatesMenu();
-                //case 4 -> projectsMenu();
                 case 4 -> {
-                    System.out.println("Exiting the Program...");
+                    printInfo("Exiting the program...");
                     shouldExit = true;
                 }
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            printError(e.getMessage());
         }
-        if(!shouldExit) startMainMenu();
+
+        if (!shouldExit) startMainMenu();
     }
 
+    /* =========================================================
+       Employees
+       ========================================================= */
+
     public void employeeMenu() {
-        System.out.println("Employees Menu:\n" +
-                "1. Show all\n" +
-                "2. Add\n" +
-                "3. Search\n" +
-                "4. Change\n" +
-                "5. Return to main\n");
+        printSection("Employees");
+        System.out.println("1. Show all");
+        System.out.println("2. Add");
+        System.out.println("3. Search");
+        System.out.println("4. Change");
+        System.out.println("5. Return to main");
 
         switch (this.getInputNumber(5)) {
-            case 1 -> {
-                var employees = empService.findAllEmployees();
+            case 1 -> printEmployeeTable(empService.findAllEmployees());
 
-                if (employees.isEmpty()) {
-                    System.out.println("No employees found.");
-                    return;
-                }
-
-                System.out.println(
-                        "--------------------------------------------------------------------------------------------------------------");
-                System.out.printf(
-                        "%-3s | %-15s | %-15s | %-30s | %-12s | %-12s | %-5s%n",
-                        "ID", "First name", "Last name", "Email", "Role", "Status", "Hrs");
-                System.out.println(
-                        "--------------------------------------------------------------------------------------------------------------");
-
-                for (Employee emp : employees) {
-                    System.out.printf(
-                            "%-3d | %-15s | %-15s | %-30s | %-12s | %-12s | %-5d%n",
-                            emp.getId(),
-                            emp.getFirstName(),
-                            emp.getLastName(),
-                            emp.getEmail(),
-                            emp.getRole(),
-                            emp.getStatus(),
-                            emp.getWorkingHours()
-                    );
-                }
-
-                System.out.println(
-                        "--------------------------------------------------------------------------------------------------------------");
-
-            }
             case 2 -> {
+                printSection("Add Employee");
                 String firstName, lastName, role, status, hireDate;
                 int workingHours;
 
-                System.out.print("New Employee: \nPlease enter firstname: ");
+                System.out.print("First name: ");
                 firstName = inputScanner.nextLine();
 
-                System.out.print("New Employee: \nPlease enter lastname: ");
+                System.out.print("Last name: ");
                 lastName = inputScanner.nextLine();
 
-                System.out.print("New Employee: \nPlease enter a role: ");
+                System.out.print("Role: ");
                 role = inputScanner.nextLine();
 
-                System.out.print("New Employee: \nPlease enter a status for the employee: ");
+                System.out.print("Status: ");
                 status = inputScanner.nextLine();
 
-                System.out.print("New Employee: \nPlease enter the date the employee was hired (yyyy-mm-dd): ");
+                System.out.print("Hire date (yyyy-mm-dd): ");
                 hireDate = inputScanner.nextLine();
 
-                System.out.print("New Employee: \nPlease enter the amount of hours the employee works in a week: ");
-                workingHours = Integer.parseInt(inputScanner.nextLine());
+                System.out.print("Working hours per week: ");
+                try {
+                    workingHours = Integer.parseInt(inputScanner.nextLine().trim());
+                } catch (NumberFormatException e) {
+                    printError("Invalid working hours.");
+                    break;
+                }
 
                 try {
                     empService.createEmployee(firstName, lastName, role, status, hireDate, workingHours);
-                    System.out.println("Employee successfully created");
+                    printInfo("Employee successfully created.");
                 } catch (RuntimeException e) {
-                    System.out.println("Employee creation failed: " + e.getMessage());
+                    printError("Employee creation failed: " + e.getMessage());
                 }
             }
+
             case 3 -> employeeSearchMenu();
+
             case 4 -> {
+                printSection("Change Employee");
                 System.out.print("Enter employee ID to change: ");
                 int id;
                 try {
                     id = Integer.parseInt(inputScanner.nextLine().trim());
                 } catch (NumberFormatException e) {
-                    System.out.println("Invalid ID. Please enter a whole number.");
-                    return;
+                    printError("Invalid ID. Please enter a whole number.");
+                    break;
                 }
 
                 empService.findEmployeeByID(id).ifPresentOrElse(emp -> {
-
-                    System.out.println("Press Enter to keep current value.");
+                    printInfo("Press Enter to keep current value.");
 
                     System.out.print("First name [" + emp.getFirstName() + "]: ");
                     String firstName = inputScanner.nextLine();
@@ -196,7 +268,7 @@ public class UI {
                     String hireDate = inputScanner.nextLine();
                     if (hireDate.isBlank()) hireDate = emp.getHireDate();
 
-                    Integer workingHours = null;
+                    Integer workingHours;
                     System.out.print("Working hours [" + emp.getWorkingHours() + "]: ");
                     String whStr = inputScanner.nextLine().trim();
                     if (whStr.isBlank()) {
@@ -205,20 +277,17 @@ public class UI {
                         try {
                             workingHours = Integer.parseInt(whStr);
                         } catch (NumberFormatException e) {
-                            System.out.println("Invalid working hours. Update cancelled.");
+                            printError("Invalid working hours. Update cancelled.");
                             return;
                         }
                     }
 
-                    // Email: optional regenerieren (nur sinnvoll, wenn Name geändert wurde)
                     String email = emp.getEmail();
                     if (!firstName.equals(emp.getFirstName()) || !lastName.equals(emp.getLastName())) {
                         System.out.print("Regenerate email based on the new name? (y/n): ");
                         String regen = inputScanner.nextLine().trim().toLowerCase();
                         if (regen.equals("y") || regen.equals("yes")) {
-                            // nutzt die Update-Unique-Logik im Service
                             email = empService.generateEmailForUpdate(firstName, lastName, emp.getId());
-                            // siehe Hinweis unten!
                         }
                     }
 
@@ -235,115 +304,101 @@ public class UI {
 
                     try {
                         empService.updateEmployee(updated);
-                        System.out.println("Employee updated successfully.");
+                        printInfo("Employee updated successfully.");
                     } catch (RuntimeException e) {
-                        System.out.println("Employee update failed: " + e.getMessage());
+                        printError("Employee update failed: " + e.getMessage());
                     }
 
-                }, () -> System.out.println("Employee with ID " + id + " not found."));
+                }, () -> printError("Employee with ID " + id + " not found."));
             }
+
             case 5 -> shouldExit = true;
         }
-        if(shouldExit) startMainMenu();
+
+        if (shouldExit) startMainMenu();
         else employeeMenu();
     }
 
     public void employeeSearchMenu() {
-        System.out.println("Search Employee:\n" +
-                "1. By ID\n" +
-                "2. By last name\n" +
-                "3. Return to employee\n");
+        printSection("Search Employee");
+        System.out.println("1. By ID");
+        System.out.println("2. By last name");
+        System.out.println("3. Return to employees");
 
         switch (this.getInputNumber(3)) {
             case 1 -> {
-                System.out.println("Enter ID:\n");
-                int id = inputScanner.nextInt();
-                empService.findEmployeeByID(id).ifPresentOrElse(
-                        employee -> System.out.println(employee.toString()),
-                        () -> System.out.printf("Employee with ID %d not found\n", id)
-                );
-            }
-            case 2 -> {
-                System.out.print("Enter last name (or part of it): ");
-                String lastName = inputScanner.nextLine().trim();
-
-                var results = empService.findEmployeesByLastName(lastName);
-
-                if (results.isEmpty()) {
-                    System.out.println("No employees found for last name: " + lastName);
+                System.out.print("Enter ID: ");
+                int id;
+                try {
+                    id = Integer.parseInt(inputScanner.nextLine().trim());
+                } catch (NumberFormatException e) {
+                    printError("Invalid ID.");
                     return;
                 }
 
-                System.out.println(
-                        "--------------------------------------------------------------------------------------------------------------");
-                System.out.printf(
-                        "%-3s | %-15s | %-15s | %-30s | %-12s | %-12s | %-5s%n",
-                        "ID", "First name", "Last name", "Email", "Role", "Status", "Hrs");
-                System.out.println(
-                        "--------------------------------------------------------------------------------------------------------------");
-
-                for (Employee emp : results) {
-                    System.out.printf(
-                            "%-3d | %-15s | %-15s | %-30s | %-12s | %-12s | %-5d%n",
-                            emp.getId(),
-                            emp.getFirstName(),
-                            emp.getLastName(),
-                            emp.getEmail(),
-                            emp.getRole(),
-                            emp.getStatus(),
-                            emp.getWorkingHours()
-                    );
-                }
-
-                System.out.println(
-                        "--------------------------------------------------------------------------------------------------------------");
+                empService.findEmployeeByID(id).ifPresentOrElse(
+                        employee -> printEmployeeTable(List.of(employee)),
+                        () -> printError("Employee with ID " + id + " not found.")
+                );
             }
+
+            case 2 -> {
+                System.out.print("Enter last name (or part of it): ");
+                String lastName = inputScanner.nextLine().trim();
+                printEmployeeTable(empService.findEmployeesByLastName(lastName));
+            }
+
             case 3 -> employeeMenu();
         }
     }
 
+    /* =========================================================
+       Skills
+       ========================================================= */
+
     public void skillsMenu() {
-        System.out.println("Skills Menu:\n" +
-                "1. Show all\n" +
-                "2. Add\n" +
-                "3. Search\n" +
-                "4. Change\n" +
-                "5. Return to main\n");
+        printSection("Skills");
+        System.out.println("1. Show all");
+        System.out.println("2. Add");
+        System.out.println("3. Search");
+        System.out.println("4. Change");
+        System.out.println("5. Return to main");
 
         switch (this.getInputNumber(5)) {
-            case 1 -> {
-                for(Skill skill : skillService.findAllSkills()) {
-                    System.out.println(skill);
-                }
-            }
+            case 1 -> printSkillTable(skillService.findAllSkills());
+
             case 2 -> {
-                System.out.print("New Skill:\nPlease enter skill name: ");
+                printSection("Add Skill");
+                System.out.print("Skill name: ");
                 String name = inputScanner.nextLine();
 
-                System.out.print("Please enter category: ");
+                System.out.print("Category: ");
                 String category = inputScanner.nextLine();
 
                 try {
                     Skill created = skillService.createSkill(name, category);
-                    System.out.println("Skill successfully created:");
-                    System.out.println(created);
+                    printInfo("Skill successfully created.");
+                    printSkillTable(List.of(created));
                 } catch (RuntimeException e) {
-                    System.out.println("Skill creation failed: " + e.getMessage());
+                    printError("Skill creation failed: " + e.getMessage());
                 }
             }
+
             case 3 -> skillSearchMenu();
+
             case 4 -> {
+                printSection("Change Skill");
                 System.out.print("Enter skill ID to change: ");
                 int id;
                 try {
                     id = Integer.parseInt(inputScanner.nextLine().trim());
                 } catch (NumberFormatException e) {
-                    System.out.println("Invalid ID. Please enter a whole number.");
+                    printError("Invalid ID. Please enter a whole number.");
                     return;
                 }
 
                 skillService.findSkillByID(id).ifPresentOrElse(skill -> {
-                    System.out.println("Press Enter to keep current value.");
+                    printInfo("Press Enter to keep current value.");
 
                     System.out.print("Skill name [" + skill.getName() + "]: ");
                     String newName = inputScanner.nextLine();
@@ -357,96 +412,80 @@ public class UI {
 
                     try {
                         skillService.updateSkill(updated);
-                        System.out.println("Skill updated successfully.");
+                        printInfo("Skill updated successfully.");
                     } catch (RuntimeException e) {
-                        System.out.println("Skill update failed: " + e.getMessage());
+                        printError("Skill update failed: " + e.getMessage());
                     }
 
-                }, () -> System.out.println("Skill with ID " + id + " not found."));
+                }, () -> printError("Skill with ID " + id + " not found."));
             }
+
             case 5 -> shouldExit = true;
         }
-        if(shouldExit) startMainMenu();
+
+        if (shouldExit) startMainMenu();
         else skillsMenu();
     }
 
     public void skillSearchMenu() {
-        System.out.println("Search Skill:\n" +
-                "1. By ID\n" +
-                "2. By name\n" +
-                "3. Return to employee\n");
+        printSection("Search Skill");
+        System.out.println("1. By ID");
+        System.out.println("2. By name");
+        System.out.println("3. Return to skills");
 
         switch (this.getInputNumber(3)) {
             case 1 -> {
-                System.out.println("Enter ID:\n");
-                int id = inputScanner.nextInt();
+                System.out.print("Enter ID: ");
+                int id;
+                try {
+                    id = Integer.parseInt(inputScanner.nextLine().trim());
+                } catch (NumberFormatException e) {
+                    printError("Invalid ID.");
+                    return;
+                }
+
                 skillService.findSkillByID(id).ifPresentOrElse(
-                        skill -> System.out.println(skill.toString()),
-                        () -> System.out.printf("Skill with ID %d not found\n", id)
+                        skill -> printSkillTable(List.of(skill)),
+                        () -> printError("Skill with ID " + id + " not found.")
                 );
             }
+
             case 2 -> {
-                System.out.println("Enter name:\n");
-                String name = inputScanner.nextLine();
+                System.out.print("Enter name: ");
+                String name = inputScanner.nextLine().trim();
+
                 skillService.findSkillByName(name).ifPresentOrElse(
-                        skill -> System.out.println(skill.toString()),
-                        () -> System.out.printf("Skill with name %s not found\n", name)
+                        skill -> printSkillTable(List.of(skill)),
+                        () -> printError("Skill with name '" + name + "' not found.")
                 );
             }
+
             case 3 -> skillsMenu();
         }
     }
 
+    /* =========================================================
+       Certificates
+       ========================================================= */
+
     public void certificatesMenu() {
-        System.out.println("Certificates Menu:\n" +
-                "1. Show all\n" +
-                "2. Show details (by ID)\n" +
-                "3. Add\n" +
-                "4. Change\n" +
-                "5. Return to main \n");
+        printSection("Certificates");
+        System.out.println("1. Show all");
+        System.out.println("2. Show details (by ID)");
+        System.out.println("3. Add");
+        System.out.println("4. Change");
+        System.out.println("5. Return to main");
 
         switch (this.getInputNumber(5)) {
-            case 1 -> {
-                var certs = certificateService.findAllCertificates();
-                if (certs.isEmpty()) {
-                    System.out.println("No certificates found.");
-                } else {
-                    System.out.println(
-                            "---------------------------------------------------------------------------------------------");
-                    System.out.printf(
-                            "%-3s | %-25s | %-12s | %-10s | %-10s | %-15s%n",
-                            "ID", "Name", "Category", "Issuer", "Renewal", "Cycle (months)");
-                    System.out.println(
-                            "---------------------------------------------------------------------------------------------");
+            case 1 -> printCertificateTable(certificateService.findAllCertificates());
 
-                    for (Certificate cert : certs) {
-                        String renewal = cert.isRequiresRenewal() ? "YES" : "NO";
-                        String cycle = cert.getRenewalCycleMonths() != null
-                                ? cert.getRenewalCycleMonths().toString()
-                                : "-";
-
-                        System.out.printf(
-                                "%-3d | %-25s | %-12s | %-10s | %-10s | %-15s%n",
-                                cert.getId(),
-                                cert.getName(),
-                                cert.getCategory(),
-                                cert.getIssuerType(),
-                                renewal,
-                                cycle
-                        );
-                    }
-
-                    System.out.println(
-                            "---------------------------------------------------------------------------------------------");
-                }
-            }
             case 2 -> {
                 System.out.print("Enter certificate ID: ");
                 int id;
                 try {
                     id = Integer.parseInt(inputScanner.nextLine().trim());
                 } catch (NumberFormatException e) {
-                    System.out.println("Invalid ID. Please enter a whole number.");
+                    printError("Invalid ID. Please enter a whole number.");
                     return;
                 }
 
@@ -466,16 +505,18 @@ public class UI {
                                     ? cert.getDescription()
                                     : "-"));
                     System.out.println("--------------------------------------------------");
-                }, () -> System.out.println("Certificate with ID " + id + " not found."));
+                }, () -> printError("Certificate with ID " + id + " not found."));
             }
+
             case 3 -> {
-                System.out.print("New Certificate:\nPlease enter certificate name: ");
+                printSection("Add Certificate");
+                System.out.print("Certificate name: ");
                 String name = inputScanner.nextLine();
 
-                System.out.print("Please enter category (e.g. Quality, Security, Regulatory): ");
+                System.out.print("Category (e.g. Quality, Security, Regulatory): ");
                 String category = inputScanner.nextLine();
 
-                System.out.print("Please enter issuer type (e.g. ISO, IEC, Regulation, Audit): ");
+                System.out.print("Issuer type (e.g. ISO, IEC, Regulation, Audit): ");
                 String issuerType = inputScanner.nextLine();
 
                 System.out.print("Requires renewal? (y/n): ");
@@ -489,7 +530,7 @@ public class UI {
                     try {
                         renewalCycleMonths = Integer.parseInt(monthsStr);
                     } catch (NumberFormatException e) {
-                        System.out.println("Invalid number. Certificate creation cancelled.");
+                        printError("Invalid number. Certificate creation cancelled.");
                         return;
                     }
                 }
@@ -501,12 +542,14 @@ public class UI {
                     var created = certificateService.createCertificate(
                             name, category, issuerType, requiresRenewal, renewalCycleMonths, description
                     );
-                    System.out.println("Certificate successfully created:");
+                    printInfo("Certificate successfully created.");
+                    // Optional: show details right away
                     System.out.println(created);
                 } catch (RuntimeException e) {
-                    System.out.println("Certificate creation failed: " + e.getMessage());
+                    printError("Certificate creation failed: " + e.getMessage());
                 }
             }
+
             case 4 -> {
                 System.out.print("Enter certificate ID to change: ");
                 int id;
@@ -514,13 +557,12 @@ public class UI {
                 try {
                     id = Integer.parseInt(inputScanner.nextLine().trim());
                 } catch (NumberFormatException e) {
-                    System.out.println("Invalid ID.");
+                    printError("Invalid ID.");
                     return;
                 }
 
                 certificateService.findCertificateById(id).ifPresentOrElse(cert -> {
-
-                    System.out.println("Press Enter to keep current value.");
+                    printInfo("Press Enter to keep current value.");
 
                     System.out.print("Name [" + cert.getName() + "]: ");
                     String name = inputScanner.nextLine();
@@ -559,14 +601,20 @@ public class UI {
                             desc
                     );
 
-                    certificateService.updateCertificate(cert);
-                    System.out.println("Certificate updated successfully.");
+                    try {
+                        certificateService.updateCertificate(cert);
+                        printInfo("Certificate updated successfully.");
+                    } catch (RuntimeException e) {
+                        printError("Certificate update failed: " + e.getMessage());
+                    }
 
-                }, () -> System.out.println("Certificate not found."));
+                }, () -> printError("Certificate not found."));
             }
+
             case 5 -> shouldExit = true;
         }
-        if(shouldExit) startMainMenu();
+
+        if (shouldExit) startMainMenu();
         else certificatesMenu();
     }
 }
