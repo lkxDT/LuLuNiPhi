@@ -114,6 +114,10 @@ public class EmployeeService {
         return repo.findAll();
     }
 
+    public List<Employee> findEmployeesByLastName(String lastName) {
+        return repo.findByLastName(lastName);
+    }
+
     public Optional<Employee> findEmployeeByID(int id) {
         return repo.findByID(id);
     }

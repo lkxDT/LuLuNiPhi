@@ -251,9 +251,10 @@ public class UI {
     public void employeeSearchMenu() {
         System.out.println("Search Employee:\n" +
                 "1. By ID\n" +
-                "2. Return to employee\n");
+                "2. By last name\n" +
+                "3. Return to employee\n");
 
-        switch (this.getInputNumber(2)) {
+        switch (this.getInputNumber(3)) {
             case 1 -> {
                 System.out.println("Enter ID:\n");
                 int id = inputScanner.nextInt();
@@ -262,7 +263,42 @@ public class UI {
                         () -> System.out.printf("Employee with ID %d not found\n", id)
                 );
             }
-            case 2 -> employeeMenu();
+            case 2 -> {
+                System.out.print("Enter last name (or part of it): ");
+                String lastName = inputScanner.nextLine().trim();
+
+                var results = empService.findEmployeesByLastName(lastName);
+
+                if (results.isEmpty()) {
+                    System.out.println("No employees found for last name: " + lastName);
+                    return;
+                }
+
+                System.out.println(
+                        "--------------------------------------------------------------------------------------------------------------");
+                System.out.printf(
+                        "%-3s | %-15s | %-15s | %-30s | %-12s | %-12s | %-5s%n",
+                        "ID", "First name", "Last name", "Email", "Role", "Status", "Hrs");
+                System.out.println(
+                        "--------------------------------------------------------------------------------------------------------------");
+
+                for (Employee emp : results) {
+                    System.out.printf(
+                            "%-3d | %-15s | %-15s | %-30s | %-12s | %-12s | %-5d%n",
+                            emp.getId(),
+                            emp.getFirstName(),
+                            emp.getLastName(),
+                            emp.getEmail(),
+                            emp.getRole(),
+                            emp.getStatus(),
+                            emp.getWorkingHours()
+                    );
+                }
+
+                System.out.println(
+                        "--------------------------------------------------------------------------------------------------------------");
+            }
+            case 3 -> employeeMenu();
         }
     }
 
@@ -338,9 +374,9 @@ public class UI {
         System.out.println("Search Skill:\n" +
                 "1. By ID\n" +
                 "2. By name\n" +
-                "2. Return to employee\n");
+                "3. Return to employee\n");
 
-        switch (this.getInputNumber(2)) {
+        switch (this.getInputNumber(3)) {
             case 1 -> {
                 System.out.println("Enter ID:\n");
                 int id = inputScanner.nextInt();
