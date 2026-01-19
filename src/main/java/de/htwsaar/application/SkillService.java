@@ -3,8 +3,6 @@ package de.htwsaar.application;
 import java.util.List;
 import java.util.Optional;
 import de.htwsaar.domain.AssignedSkill;
-
-import de.htwsaar.domain.Employee;
 import de.htwsaar.domain.Skill;
 import de.htwsaar.repository.EmployeeSkillRepository;
 import de.htwsaar.repository.SkillRepository;
@@ -18,12 +16,6 @@ public class SkillService {
         this.employeeSkillRepo = es;
     }
 
-    /**
-     *
-     * @param name Name of skill
-     * @param category Category of skill
-     * @return DomainObject of type Skill
-     */
     public List<Skill> findAllSkills() {
         return skillRepo.findAll();
     }

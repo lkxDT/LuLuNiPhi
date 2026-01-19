@@ -1,7 +1,6 @@
 package de.htwsaar.repository;
 
 import de.htwsaar.domain.Employee;
-import de.htwsaar.util.DateFormatChecker;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -17,30 +16,15 @@ public class EmployeeRepository {
     }
 
     /**
-     * Speichert einen Skill als Eintrag in der Datenbank
-     * @param firstName Firstname of employee
-     * @param lastName Lastname of employee
-     * @param email Email of employee
-     * @param role Role of employee
-     * @param status If the employee is currently in active employment, on leave, not available or not there anymore
-     * @param hireDate Date of employment
-     * @param workingHours Working hours per week
-     * @return Domain object of employee
+     * Speichert einen Employee als Eintrag in der Datenbank.
      */
     public Employee save(String firstName, String lastName,
                          String email, String role, String status,
                          String hireDate, int workingHours) {
 
         try (PreparedStatement stmt = conn.prepareStatement(
-                "INSERT INTO employee(first_Name,last_Name, mail, role, status, hire_date, working_hours) VALUES (?,?,?,?,?,?,?)",
+                "INSERT INTO employee(first_Name, last_Name, mail, role, status, hire_date, working_hours) VALUES (?,?,?,?,?,?,?)",
                 Statement.RETURN_GENERATED_KEYS)) {
-
-            if (!email.contains("@") ||
-                    !DateFormatChecker.check(hireDate) ||
-                    workingHours < 0 ||
-                    workingHours > 168) {
-                throw new IllegalArgumentException("invalid data");
-            }
 
             stmt.setString(1, firstName);
             stmt.setString(2, lastName);
@@ -52,47 +36,47 @@ public class EmployeeRepository {
 
             stmt.executeUpdate();
 
-            ResultSet keys = stmt.getGeneratedKeys();
-            keys.next();
-            return new Employee(keys.getInt(1), firstName, lastName, email, role, status, hireDate, workingHours);
+            try (ResultSet keys = stmt.getGeneratedKeys()) {
+                if (!keys.next()) {
+                    throw new SQLException("No generated key returned for employee insert.");
+                }
+                return new Employee(keys.getInt(1), firstName, lastName, email, role, status, hireDate, workingHours);
+            }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Database error occurred while saving employee", e);
         }
     }
 
     public Optional<Employee> findByID(int id) {
-        try (PreparedStatement stmt = conn.prepareStatement("select * from employee where id = ?")) {
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM employee WHERE id = ?")) {
             stmt.setInt(1, id);
-            ResultSet rs = stmt.executeQuery();
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (!rs.next()) return Optional.empty();
 
-            if (!rs.next()) {
-                return Optional.empty();
+                return Optional.of(new Employee(
+                        rs.getInt("id"),
+                        rs.getString("first_Name"),
+                        rs.getString("last_Name"),
+                        rs.getString("mail"),
+                        rs.getString("role"),
+                        rs.getString("status"),
+                        rs.getString("hire_date"),
+                        rs.getInt("working_hours")
+                ));
             }
-
-            return Optional.of(new Employee(
-                    rs.getInt("id"),
-                    rs.getString("first_Name"),
-                    rs.getString("last_Name"),
-                    rs.getString("mail"),
-                    rs.getString("role"),
-                    rs.getString("status"),
-                    rs.getString("hire_date"),
-                    rs.getInt("working_hours")
-            ));
         } catch (SQLException e) {
-            throw new RuntimeException("Database error occured", e);
+            throw new RuntimeException("Database error occurred while finding employee by id", e);
         }
     }
 
-    // ✅ RICHTIGE STELLE: eigene Methode auf Klassenebene
     public List<Employee> findByLastName(String lastName) {
         List<Employee> result = new ArrayList<>();
 
         try (PreparedStatement stmt = conn.prepareStatement(
                 "SELECT * FROM employee WHERE last_Name LIKE ? COLLATE NOCASE")) {
 
-            stmt.setString(1, "%" + lastName.trim() + "%"); // Teiltreffer
+            stmt.setString(1, "%" + lastName.trim() + "%");
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -110,15 +94,12 @@ public class EmployeeRepository {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException("Database error occured", e);
+            throw new RuntimeException("Database error occurred while searching employees by last name", e);
         }
 
         return result;
     }
 
-    /**
-     * @return List of all employees
-     */
     public List<Employee> findAll() {
         List<Employee> result = new ArrayList<>();
         try (Statement stmt = conn.createStatement();
@@ -138,10 +119,7 @@ public class EmployeeRepository {
             }
 
         } catch (SQLException e) {
-            if (e.getMessage() != null && e.getMessage().contains("UNIQUE")) {
-                throw new IllegalStateException("Email already exists", e);
-            }
-            throw new RuntimeException(e);
+            throw new RuntimeException("Database error occurred while loading all employees", e);
         }
         return result;
     }
@@ -157,29 +135,7 @@ public class EmployeeRepository {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException("Database error occured", e);
-        }
-    }
-
-    public void update(Employee emp) {
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "UPDATE employee SET " +
-                        "first_Name = ?, last_Name = ?, mail = ?, role = ?, status = ?, hire_date = ?, working_hours = ? " +
-                        "WHERE id = ?")) {
-
-            stmt.setString(1, emp.getFirstName());
-            stmt.setString(2, emp.getLastName());
-            stmt.setString(3, emp.getEmail());
-            stmt.setString(4, emp.getRole());
-            stmt.setString(5, emp.getStatus());
-            stmt.setString(6, emp.getHireDate());
-            stmt.setInt(7, emp.getWorkingHours());
-            stmt.setInt(8, emp.getId());
-
-            stmt.executeUpdate();
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Database error occured", e);
+            throw new RuntimeException("Database error occurred while checking email existence", e);
         }
     }
 
@@ -195,7 +151,27 @@ public class EmployeeRepository {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException("Database error occured", e);
+            throw new RuntimeException("Database error occurred while checking email existence for other employee", e);
+        }
+    }
+
+    public void update(Employee emp) {
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "UPDATE employee SET first_Name = ?, last_Name = ?, mail = ?, role = ?, status = ?, hire_date = ?, working_hours = ? WHERE id = ?")) {
+
+            stmt.setString(1, emp.getFirstName());
+            stmt.setString(2, emp.getLastName());
+            stmt.setString(3, emp.getEmail());
+            stmt.setString(4, emp.getRole());
+            stmt.setString(5, emp.getStatus());
+            stmt.setString(6, emp.getHireDate());
+            stmt.setInt(7, emp.getWorkingHours());
+            stmt.setInt(8, emp.getId());
+
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error occurred while updating employee", e);
         }
     }
 }

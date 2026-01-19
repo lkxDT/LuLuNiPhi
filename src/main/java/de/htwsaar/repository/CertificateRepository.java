@@ -37,7 +37,7 @@ public class CertificateRepository {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException("Database error occured", e);
+            throw new RuntimeException("Database error occurred", e);
         }
 
         return result;
@@ -66,7 +66,7 @@ public class CertificateRepository {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException("Database error occured", e);
+            throw new RuntimeException("Database error occurred", e);
         }
     }
     public void update(Certificate cert) {
@@ -139,7 +139,7 @@ public class CertificateRepository {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException("Database error occured", e);
+            throw new RuntimeException("Database error occurred", e);
         }
     }
 }

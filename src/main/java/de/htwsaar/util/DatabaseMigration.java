@@ -4,7 +4,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import de.htwsaar.repository.SQLConnection;
 
 public class DatabaseMigration {
@@ -12,9 +11,6 @@ public class DatabaseMigration {
     private static final String DB_PATH = "data/employees.db";
     private static final String DB_URL  = "jdbc:sqlite:" + DB_PATH;
 
-    /**
-     * Prüft, ob die DB existiert – falls nicht, wird sie angelegt.
-     */
     public static void migrate() {
         try {
             Path path = Paths.get(DB_PATH);

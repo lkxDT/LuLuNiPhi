@@ -6,7 +6,14 @@
       <synchronize>true</synchronize>
       <remarks>added Database file</remarks>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/src/main/data/employees.db</jdbc-url>
+      <jdbc-url>jdbc:sqlite:C:\Users\psorn\IdeaProjects\LuLuNiPhi-2.0\data\employees.db</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
+    <data-source source="LOCAL" name="identifier.sqlite" uuid="c724302d-b1bf-49ee-83ce-6679a11f1b8f">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:identifier.sqlite</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

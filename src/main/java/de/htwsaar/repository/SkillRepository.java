@@ -1,6 +1,5 @@
 package de.htwsaar.repository;
 
-import de.htwsaar.domain.Employee;
 import de.htwsaar.domain.Skill;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -60,7 +59,7 @@ public class SkillRepository {
 
             ));
         } catch (SQLException e) {
-            throw new RuntimeException("Database error occured");
+            throw new RuntimeException("Database error occurred");
 
         }
     }
@@ -81,7 +80,7 @@ public class SkillRepository {
 
             ));
         } catch (SQLException e) {
-            throw new RuntimeException("Database error occured");
+            throw new RuntimeException("Database error occurred");
 
         }
     }
@@ -117,7 +116,7 @@ public class SkillRepository {
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            throw new RuntimeException("Database error occured", e);
+            throw new RuntimeException("Database error occurred", e);
         }
     }
 }
