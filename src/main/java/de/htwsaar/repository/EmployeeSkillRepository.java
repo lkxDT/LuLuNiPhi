@@ -70,6 +70,7 @@ public class EmployeeSkillRepository {
 
         return result;
     }
+
     public boolean existsAssignment(int employeeId, int skillId) {
         try (PreparedStatement stmt = conn.prepareStatement(
                 "SELECT 1 FROM employee_skill WHERE employee_id = ? AND skill_id = ? LIMIT 1")) {
@@ -85,6 +86,7 @@ public class EmployeeSkillRepository {
             throw new RuntimeException("Database error occured", e);
         }
     }
+
     public void updateAssignment(int employeeId, int skillId, int level, String sinceDate) {
         try (PreparedStatement stmt = conn.prepareStatement(
                 "UPDATE employee_skill SET level = ?, since_date = ? " +
@@ -102,6 +104,26 @@ public class EmployeeSkillRepository {
 
         } catch (SQLException e) {
             throw new RuntimeException("Database error occured", e);
+        }
+    }
+
+    /**
+     * Removes a skill assignment from an employee
+     */
+    public void removeAssignment(int employeeId, int skillId) {
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "DELETE FROM employee_skill WHERE employee_id = ? AND skill_id = ?")) {
+
+            stmt.setInt(1, employeeId);
+            stmt.setInt(2, skillId);
+
+            int deletedRows = stmt.executeUpdate();
+            if (deletedRows == 0) {
+                throw new IllegalStateException("No assignment found for this employee and skill.");
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error occurred", e);
         }
     }
 }
