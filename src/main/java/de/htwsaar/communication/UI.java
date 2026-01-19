@@ -190,8 +190,8 @@ public class UI {
         String RESET = "\u001B[0m";
 
         System.out.println(CYAN + "========================================");
-        System.out.println("        LuLuNiPhi 2.0");
-        System.out.println("   Employee Management System");
+        System.out.println("            LuLuNiPhi 2.0");
+        System.out.println("      Employee Management System");
         System.out.println("========================================" + RESET);
         System.out.println();
     }
