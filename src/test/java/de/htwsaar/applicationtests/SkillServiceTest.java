@@ -2,12 +2,14 @@ package de.htwsaar.applicationtests;
 
 import de.htwsaar.application.SkillService;
 import de.htwsaar.domain.Skill;
+import de.htwsaar.repositoryTest.MockEmployeeSkillRepository;
 import de.htwsaar.repositoryTest.MockSkillRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -15,68 +17,44 @@ class SkillServiceTest {
 
     private SkillService skillService;
     private MockSkillRepository mockRepo;
+    private MockEmployeeSkillRepository mockEmployeeSkillRepo;
 
     @BeforeEach
     void setUp() {
         this.mockRepo = new MockSkillRepository();
+        this.mockEmployeeSkillRepo = new MockEmployeeSkillRepository();
         this.skillService = new SkillService(mockRepo, null);
     }
 
-    // =========================================================================
-    //                         ACCOUNTABILITY TESTS
-    // =========================================================================
+
+                                    //FUNCTIONALITY TESTS
 
     @Test
-    @DisplayName("Accountability: Check if getAllSkills is implemented and working")
-    void testSkillServiceImplementationStatus() {
-        Object result = null;
+    @DisplayName("findAllSkills: Should return the full list from the repository")
+    void testFindAllSkills() {
+        List<Skill> skills = skillService.findAllSkills();
 
-        try {
-            java.lang.reflect.Method method = skillService.getClass().getMethod("findAllSkills");
-            result = method.invoke(skillService);
-        } catch (NoSuchMethodException e) {
-            fail("\u001B[31m[MISSING METHOD] SkillService is missing the 'getAllSkills()' method!.\u001B[0m");
-        } catch (Exception e) {
-            fail("\u001B[31m[CRASH] The method exists but it crashed when called: " + e.getCause() + "\u001B[0m");
-        }
-
-        assertNotNull(result, "\u001B[31m[LOGIC ERROR] getAllSkills() exists but it returns NULL. It should return a List.\u001B[0m");
-
-        if (result instanceof List<?>) {
-            List<?> list = (List<?>) result;
-            assertEquals(2, list.size(),
-                    "\u001B[31m[INTEGRATION ERROR] getAllSkills() is not returning the Mock data. Expected 2 skills, found " + list.size() + ".\u001B[0m");
-            System.err.println("\u001B[32m✔ SkillService: Implementation verified! Method exists and returns data.\u001B[0m");
-        } else {
-            fail("\u001B[31m[TYPE ERROR] getAllSkills() should return a List, but it returned a " + result.getClass().getSimpleName() + ".\u001B[0m");
-        }
+        assertNotNull(skills);
+        assertEquals(2, skills.size(), "MockRepo should start with 2 skills (Java, SQL)");
+        System.err.println("\u001B[32m✔ SkillService: findAllSkills implementation verified\u001B[0m");
     }
 
     @Test
-    @DisplayName("Accountability: Check if findSkillByName is implemented")
-    void testFindSkillByNameImplementation() {
-        try {
-            java.lang.reflect.Method method = skillService.getClass().getMethod("findSkillByName", String.class);
-            Object result = method.invoke(skillService, "Java");
-            assertNotNull(result, "\u001B[31m[LOGIC ERROR] findSkillByName('Java') returned null but Java exists in Mock.\u001B[0m");
-            System.err.println("\u001B[32m✔ SkillService: findSkillByName is implemented and working.\u001B[0m");
-        } catch (NoSuchMethodException e) {
-            fail("\u001B[31m[MISSING METHOD] SkillService needs a 'findSkillByName(String)' method for search functionality.\u001B[0m");
-        } catch (Exception e) {
-            fail("\u001B[31m[CRASH] findSkillByName exists but crashed: " + e.getMessage() + "\u001B[0m");
-        }
-    }
+    @DisplayName("findSkillByName: Should find an existing skill")
+    void testFindSkillByName() {
+        Optional<Skill> result = skillService.findSkillByName("Java");
 
-    // =========================================================================
-    //                BASIC FUNCTIONALITY (Happy Path)
-    // =========================================================================
+        assertTrue(result.isPresent(), "Skill 'Java' should be found");
+        assertEquals("Java", result.get().getName());
+        System.err.println("\u001B[32m✔ SkillService: findSkillByName correctly retrieved 'Java'\u001B[0m");
+    }
 
     @Test
     @DisplayName("createSkill: Should add a new skill with incremental ID")
     void testCreateSkill() {
         Skill newSkill = skillService.createSkill("Python", "Scripting Language");
         assertNotNull(newSkill);
-        assertEquals(3, newSkill.getId());
+        assertEquals(3, newSkill.getId(), "Next ID should be 3");
         assertEquals("Python", newSkill.getName());
         System.err.println("\u001B[32m✔ SkillService: Correctly created new skill 'Python' with ID 3\u001B[0m");
     }
@@ -86,23 +64,13 @@ class SkillServiceTest {
     // =========================================================================
 
     @Test
-    @DisplayName("Validation: Should not allow empty skill names")
-    void testCreateSkillWithEmptyName() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            skillService.createSkill("", "No name provided");
-        }, "\u001B[31m[LOGIC ERROR] SkillService accepted an empty string! must add an isEmpty() check.\u001B[0m");
-
-        System.err.println("\u001B[32m✔ SkillService: Successfully blocked empty skill name validation\u001B[0m");
+    @DisplayName("Validation: Should not allow empty or null names")
+    void testInvalidInputs() {
+        assertThrows(IllegalArgumentException.class, () -> skillService.createSkill("", "Category"));
+        assertThrows(IllegalArgumentException.class, () -> skillService.createSkill(null, "Category"));
+        System.err.println("\u001B[32m✔ SkillService: Successfully blocked invalid name inputs\u001B[0m");
     }
 
-    @Test
-    @DisplayName("Validation: Should throw exception for null skill name")
-    void testCreateSkillWithNullName() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            skillService.createSkill(null, "Description");
-        }, "\u001B[31m[LOGIC ERROR] SkillService accepted a NULL name! must add a null check.\u001B[0m");
-        System.err.println("\u001B[32m✔ SkillService: Successfully blocked NULL skill name.\u001B[0m");
-    }
 
     @Test
     @DisplayName("Validation: Should not allow duplicate skill names")
@@ -110,7 +78,20 @@ class SkillServiceTest {
         assertThrows(IllegalArgumentException.class, () -> {
             skillService.createSkill("Java", "Duplicate");
         }, "\u001B[31m[LOGIC ERROR] SkillService allowed a duplicate name! must check if the skill exists before saving.\u001B[0m");
-
         System.err.println("\u001B[32m✔ SkillService: Correctly blocked duplicate skill creation.\u001B[0m");
+    }
+
+    @Test
+    @DisplayName("Assignment: Should validate level range (1-5)")
+    void testInvalidSkillLevel() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            skillService.assignSkill(1, 1, 6, "2026-01-19");
+        });
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            skillService.assignSkill(1, 1, 0, "2026-01-19");
+        });
+
+        System.err.println("\u001B[32m✔ SkillService: Successfully validated skill level boundaries\u001B[0m");
     }
 }

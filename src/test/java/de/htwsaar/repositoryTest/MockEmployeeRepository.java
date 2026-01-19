@@ -5,6 +5,7 @@ import de.htwsaar.repository.EmployeeRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MockEmployeeRepository extends EmployeeRepository {
     private final List<Employee> database = new ArrayList<>();
@@ -31,7 +32,15 @@ public class MockEmployeeRepository extends EmployeeRepository {
         return newEmp;
     }
 
+    @Override
+    public List<Employee> findByLastName(String lastName) {
+        return database.stream()
+                .filter(e -> e.getLastName().equalsIgnoreCase(lastName.trim()))
+                .collect(Collectors.toList());
+    }
+
     public void clear() {
         this.database.clear();
     }
+
 }
