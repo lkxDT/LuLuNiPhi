@@ -26,6 +26,7 @@ class EmployeeTest {
         System.out.println("\u001B[32m✔ Employee Creation Test Passed\u001B[0m");
     }
 
+
     @Test
     @DisplayName("Test: toString Formatting")
     void testToStringFormatting() {
