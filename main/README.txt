@@ -119,8 +119,8 @@ Statusdarstellung
 
 Mitarbeiterstatus wird in der Konsole farblich dargestellt:
 
-Status	Farbe
-ACTIVE	Grün
+Status	    Farbe
+ACTIVE	    Grün
 INACTIVE	Gelb
 ON_LEAVE	Rot
 
