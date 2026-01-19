@@ -11,6 +11,7 @@ import de.htwsaar.domain.Certificate;
 import de.htwsaar.domain.Employee;
 import de.htwsaar.domain.Skill;
 import de.htwsaar.util.AnsiColorUtil;
+import de.htwsaar.domain.Employee;
 
 public class UI {
     private final Scanner inputScanner;
@@ -240,9 +241,13 @@ public class UI {
                 }
 
                 try {
-                    empService.createEmployee(firstName, lastName, role, status, hireDate, workingHours);
-                    printInfo("Employee successfully created.");
+                    Employee created = empService.createEmployee(firstName, lastName, role, status, hireDate, workingHours);
+                    printInfo("Employee successfully created: " + created.getEmail());
+                } catch (IllegalArgumentException e) {
+                    // Eingabefehler (User)
+                    printError(e.getMessage());
                 } catch (RuntimeException e) {
+                    // Systemfehler (DB/Repo etc.)
                     printError("Employee creation failed: " + e.getMessage());
                 }
             }
