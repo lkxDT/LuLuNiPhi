@@ -30,4 +30,8 @@ public class MockEmployeeRepository extends EmployeeRepository {
         database.add(newEmp);
         return newEmp;
     }
+
+    public void clear() {
+        this.database.clear();
+    }
 }
