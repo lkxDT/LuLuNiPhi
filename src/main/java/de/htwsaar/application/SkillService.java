@@ -8,6 +8,7 @@ import de.htwsaar.repository.EmployeeSkillRepository;
 import de.htwsaar.repository.SkillRepository;
 
 public class SkillService {
+
     private final SkillRepository skillRepo;
     private final EmployeeSkillRepository employeeSkillRepo;
 
@@ -39,6 +40,28 @@ public class SkillService {
         employeeSkillRepo.assign(empId, skillId, level, sinceDate);
     }
 
+    public void updateSkillAssignment(int empId, int skillId, int level, String sinceDate) {
+        if (level < 1 || level > 5) {
+            throw new IllegalArgumentException("Level must be between 1 and 5.");
+        }
+        if (sinceDate == null || sinceDate.isBlank()) {
+            throw new IllegalArgumentException("Since date must not be empty.");
+        }
+
+        employeeSkillRepo.updateAssignment(empId, skillId, level, sinceDate);
+    }
+
+    public void removeSkillFromEmployee(int empId, int skillId) {
+
+        if (!employeeSkillRepo.existsAssignment(empId, skillId)) {
+            throw new IllegalStateException(
+                    "This skill is not assigned to the employee."
+            );
+        }
+
+        employeeSkillRepo.removeAssignment(empId, skillId);
+    }
+
     public Skill createSkill(String name, String category) {
         if (invalid(name) || invalid(category)) {
             throw new IllegalArgumentException("Skill name and category must be filled out.");
@@ -59,17 +82,5 @@ public class SkillService {
 
     private boolean invalid(String v) {
         return v == null || v.isBlank();
-    }
-
-    public void updateSkillAssignment(int empId, int skillId, int level, String sinceDate) {
-        // optional: simple range check
-        if (level < 1 || level > 5) {
-            throw new IllegalArgumentException("Level must be between 1 and 5.");
-        }
-        if (sinceDate == null || sinceDate.isBlank()) {
-            throw new IllegalArgumentException("Since date must not be empty.");
-        }
-
-        employeeSkillRepo.updateAssignment(empId, skillId, level, sinceDate);
     }
 }
