@@ -10,6 +10,7 @@ import de.htwsaar.domain.AssignedSkill;
 import de.htwsaar.domain.Certificate;
 import de.htwsaar.domain.Employee;
 import de.htwsaar.domain.Skill;
+import de.htwsaar.util.AnsiColorUtil;
 
 public class UI {
     private final Scanner inputScanner;
@@ -60,13 +61,15 @@ public class UI {
         System.out.println("--------------------------------------------------------------------------------------------------------------");
 
         for (Employee emp : employees) {
+            String coloredStatus =
+                    AnsiColorUtil.colorizeStatus(emp.getStatus(), 12);
             System.out.printf("%-3d | %-15s | %-15s | %-30s | %-12s | %-12s | %-5d%n",
                     emp.getId(),
                     emp.getFirstName(),
                     emp.getLastName(),
                     emp.getEmail(),
                     emp.getRole(),
-                    emp.getStatus(),
+                    coloredStatus,
                     emp.getWorkingHours());
         }
 

@@ -18,6 +18,7 @@ public class App
     public static void main( String[] args )
     {
         DatabaseMigration.migrate();
+
         try {
             Connection conn = SQLConnection.open();
 
