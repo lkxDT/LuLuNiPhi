@@ -1,5 +1,6 @@
 package de.htwsaar.UITests;
 
+import de.htwsaar.application.CertificateService;
 import de.htwsaar.application.EmployeeService;
 import de.htwsaar.application.SkillService;
 import de.htwsaar.communication.UI;
@@ -14,6 +15,7 @@ import java.util.Scanner;
 public abstract class AbstractUITest {
     protected EmployeeService ems;
     protected SkillService sks;
+    protected CertificateService ces;
     protected final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
     private final PrintStream originalOut = System.out;
 
@@ -22,6 +24,7 @@ public abstract class AbstractUITest {
         System.setOut(new PrintStream(outContent));
         this.ems = new EmployeeService(new MockEmployeeRepository());
         this.sks = new SkillService(null, null);
+        this.ces = null;
     }
 
     @AfterEach
@@ -31,6 +34,6 @@ public abstract class AbstractUITest {
 
     protected UI createUIWithInput(String data) {
         Scanner fakeScanner = new Scanner(new ByteArrayInputStream(data.getBytes()));
-        return new UI(fakeScanner, ems, sks);
+        return new UI(fakeScanner, ems, sks, ces);
     }
 }

@@ -5,6 +5,7 @@ import de.htwsaar.repository.SkillRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class MockSkillRepository extends SkillRepository {
     private final List<Skill> skills = new ArrayList<>();
@@ -13,6 +14,15 @@ public class MockSkillRepository extends SkillRepository {
         super(null);
         skills.add(new Skill(1, "Java", "Programming Language"));
         skills.add(new Skill(2, "SQL", "Database Query Language"));
+    }
+
+
+
+    @Override
+    public Optional<Skill> findByName(String name) {
+        return skills.stream()
+                .filter(s -> s.getName().equalsIgnoreCase(name))
+                .findFirst();
     }
 
     @Override
