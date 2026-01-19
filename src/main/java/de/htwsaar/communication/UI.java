@@ -11,7 +11,6 @@ import de.htwsaar.domain.Certificate;
 import de.htwsaar.domain.Employee;
 import de.htwsaar.domain.Skill;
 import de.htwsaar.util.AnsiColorUtil;
-import de.htwsaar.domain.Employee;
 
 public class UI {
     private final Scanner inputScanner;

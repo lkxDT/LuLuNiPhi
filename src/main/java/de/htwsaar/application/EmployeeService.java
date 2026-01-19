@@ -32,7 +32,7 @@ public class EmployeeService {
         }
 
         // Email automatisch erzeugen
-        String email = generateUniqueEmail(firstName, lastName);
+        String email = generateUniqueEmail(firstName, lastName, null);
 
         // Repo kann RuntimeExceptions werfen -> die gehen durch bis UI (dort wird gedruckt)
         return this.repo.save(firstName, lastName, email, role, status, hireDate, workingHours);
@@ -41,41 +41,33 @@ public class EmployeeService {
     private boolean invalid(String value) {
         return value == null || value.isBlank();
     }
-
     /**
      * Erzeugt eine standardisierte Firmen-Email:
      * firstName.lastName@medtech.de
      */
-    private String generateUniqueEmail(String firstName, String lastName) {
+    private String generateUniqueEmail(String firstName, String lastName, Integer employeeIdToIgnore) {
         String base = normalize(firstName) + "." + normalize(lastName);
         String domain = "@medtech.de";
 
         String email = base + domain;
         int counter = 2;
 
-        while (repo.existsByEmail(email)) {
+        while (emailExists(email, employeeIdToIgnore)) {
             email = base + counter + domain;
             counter++;
         }
 
         return email;
     }
-    private String generateUniqueEmailForUpdate(String firstName, String lastName, int employeeId) {
-        String base = normalize(firstName) + "." + normalize(lastName);
-        String domain = "@medtech.de";
 
-        String email = base + domain;
-        int counter = 2;
-
-        while (repo.existsByEmailForOtherEmployee(email, employeeId)) {
-            email = base + counter + domain;
-            counter++;
+    private boolean emailExists(String email, Integer employeeIdToIgnore) {
+        if (employeeIdToIgnore == null) {
+            return repo.existsByEmail(email); // create-case
         }
-
-        return email;
+        return repo.existsByEmailForOtherEmployee(email, employeeIdToIgnore); // update-case
     }
     public String generateEmailForUpdate(String firstName, String lastName, int employeeId) {
-        return generateUniqueEmailForUpdate(firstName, lastName, employeeId);
+        return generateUniqueEmail(firstName, lastName, employeeId);
     }
 
     /**
