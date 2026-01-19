@@ -4,15 +4,12 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class SQLConnection {
-    private SQLConnection() {}
+public final class SQLConnection {
 
-    /**
-     * Static helper class for handling the connection
-     * @return Connection to SQL Database
-     * @throws SQLException for debug
-     */
+    public static final String DB_PATH = "data/employees.db";
+    public static final String DB_URL  = "jdbc:sqlite:" + DB_PATH;
+
     public static Connection open() throws SQLException {
-        return DriverManager.getConnection("jdbc:sqlite:src/main/data/employees.db");
+        return DriverManager.getConnection(DB_URL);
     }
 }

@@ -5,10 +5,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import de.htwsaar.repository.SQLConnection;
 
 public class DatabaseMigration {
 
-    private static final String DB_PATH = "main/data/employee.db";
+    private static final String DB_PATH = "data/employees.db";
     private static final String DB_URL  = "jdbc:sqlite:" + DB_PATH;
 
     /**
@@ -25,7 +26,7 @@ public class DatabaseMigration {
 
             Files.createDirectories(path.getParent());
 
-            try (Connection conn = DriverManager.getConnection(DB_URL)) {
+            try (Connection conn = SQLConnection.open()) {
                 System.out.println("✔ Neue Datenbank angelegt: " + DB_PATH);
             }
 
