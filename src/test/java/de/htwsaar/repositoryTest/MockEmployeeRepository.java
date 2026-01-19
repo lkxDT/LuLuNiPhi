@@ -20,6 +20,11 @@ public class MockEmployeeRepository extends EmployeeRepository {
     }
 
     @Override
+    public boolean existsByEmail(String email) {
+        return database.stream().anyMatch(e -> e.getEmail().equalsIgnoreCase(email));
+    }
+
+    @Override
     public Employee save(String fn, String ln, String e, String r, String s, String hd, int wh) {
         Employee newEmp = new Employee(database.size() + 1, fn, ln, e, r, s, hd, wh);
         database.add(newEmp);

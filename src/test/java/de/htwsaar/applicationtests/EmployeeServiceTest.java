@@ -37,12 +37,12 @@ class EmployeeServiceTest {
     @DisplayName("createEmployee should successfully pass data to repository and return employee")
     void testCreateEmployee() {
         Employee created = employeeService.createEmployee(
-                "Clara", "Hahn", "clara.hahn@firma.de",
+                "Clara", "Hahn",
                 "Researcher", "Active", "2018-10-27", 20
         );
         assertNotNull(created);
         assertEquals("Clara", created.getFirstName());
-        assertEquals(3, created.getID(), "New employee should get ID 3");
+        assertEquals(3, created.getId(), "New employee should get ID 3");
         System.err.println("\u001B[32m✔ Service handled creation with dynamic ID assignment\u001B[0m");
     }
     @Test
@@ -63,7 +63,7 @@ class EmployeeServiceTest {
     @DisplayName("Service: Should throw Exception when hours exceed 168")
     void testCreateEmployeeThrowsExceptionForTooManyHours() {
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            employeeService.createEmployee("Max", "Power", "max@test.de", "Dev", "Active", "2026-01-13", 200);
+            employeeService.createEmployee("Max", "Power", "Dev", "Active", "2026-01-13", 200);
         });
         assertTrue(exception.getMessage().contains("Working hours must"), "Exception message should mention the hour limit");
         System.err.println("\u001B[32m✔ Service correctly threw IllegalArgumentException\u001B[0m");
@@ -72,7 +72,7 @@ class EmployeeServiceTest {
     @DisplayName("Should handle null inputs gracefully")
     void testNullInputs() {
         assertThrows(RuntimeException.class, () -> {
-            employeeService.createEmployee(null, null, null, null, null, null, 0);
+            employeeService.createEmployee(null, null, null, null, null,0);
         }, "Service should throw an exception if mandatory database fields are null");
         System.err.println("\u001B[32m✔ Service correctly rejected/passed null error\u001B[0m");
     }

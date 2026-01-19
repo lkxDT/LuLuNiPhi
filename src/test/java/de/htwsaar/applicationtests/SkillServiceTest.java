@@ -32,7 +32,7 @@ class SkillServiceTest {
         Object result = null;
 
         try {
-            java.lang.reflect.Method method = skillService.getClass().getMethod("getAllSkills");
+            java.lang.reflect.Method method = skillService.getClass().getMethod("findAllSkills");
             result = method.invoke(skillService);
         } catch (NoSuchMethodException e) {
             fail("\u001B[31m[MISSING METHOD] SkillService is missing the 'getAllSkills()' method!.\u001B[0m");

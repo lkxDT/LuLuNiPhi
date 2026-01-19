@@ -13,7 +13,7 @@ class EmployeeTest {
         Employee emp = new Employee(1, "Clara", "Hahn", "clara@test.de", "Dev", "Active", "2026-01-15", 40);
 
         assertAll("Verify all employee fields",
-                () -> assertEquals(1, emp.getID()),
+                () -> assertEquals(1, emp.getId()),
                 () -> assertEquals("Clara", emp.getFirstName()),
                 () -> assertEquals("Hahn", emp.getLastName()),
                 () -> assertEquals("clara@test.de", emp.getEmail()),
@@ -25,6 +25,7 @@ class EmployeeTest {
 
         System.out.println("\u001B[32m✔ Employee Creation Test Passed\u001B[0m");
     }
+
 
     @Test
     @DisplayName("Test: toString Formatting")
