@@ -1,7 +1,7 @@
 package de.htwsaar;
 
 import de.htwsaar.application.*;
-import de.htwsaar.communication.UI;
+import de.htwsaar.communication.*;
 import de.htwsaar.repository.*;
 import org.sqlite.SQLiteConnection;
 import de.htwsaar.util.*;
@@ -31,10 +31,11 @@ public class App
             var skillService = new SkillService(skillRepo, empSkillRepo);
             var certService = new CertificateService(certRepo);
 
-            var userIn = new UI(empService, skillService, certService);
+            var userIn = new ConsoleUI();
+            userIn.start(empService, skillService, certService);
 
-            userIn.showStartupBanner();
-            userIn.startMainMenu();
+            //userIn.showStartupBanner();
+            //userIn.startMainMenu();
 
         } catch (SQLException e){
             throw new RuntimeException(e);
