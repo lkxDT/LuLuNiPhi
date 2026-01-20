@@ -1,6 +1,5 @@
 package de.htwsaar.UITests;
 
-import de.htwsaar.communication.UI;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
