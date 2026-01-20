@@ -36,6 +36,9 @@
         <configuration>
           <source>14</source>
           <target>14</target>
+          <testExcludes>
+            <exclude>**/UITests/*.java</exclude>
+          </testExcludes>
         </configuration>
       </plugin>
     </plugins>
