@@ -6,6 +6,7 @@ import de.htwsaar.application.EmployeeService;
 import de.htwsaar.application.SkillService;
 import de.htwsaar.communication.InputReader;
 import de.htwsaar.communication.OutputRenderer;
+import de.htwsaar.communication.employeeSkill.EmployeeSkillMenu;
 import de.htwsaar.domain.Employee;
 
 public class EmployeeMenu {
@@ -41,76 +42,11 @@ public class EmployeeMenu {
 
             switch (in.readMenuNumber(6)) {
                 case 1 -> out.employeeTable(empService.findAllEmployees());
-                case 2 -> addEmployee();
-                case 3 -> searchEmployee();
-                case 4 -> changeEmployee();
+                case 2 -> EmployeeAddMenu.show(out, in, empService);
+                case 3 -> EmployeeSearchMenu.show(out, in, empService);
+                case 4 -> EmployeeChangeMenu.show(out, in, empService);
                 case 5 -> new EmployeeSkillMenu(empService, skillService, in, out).show();
                 case 6 -> back = true;
-            }
-        }
-    }
-
-    private void addEmployee() {
-        out.section("Add Employee");
-
-        System.out.print("First name: ");
-        String firstName = in.readLine();
-
-        System.out.print("Last name: ");
-        String lastName = in.readLine();
-
-        System.out.print("Role: ");
-        String role = in.readLine();
-
-        System.out.print("Status: ");
-        String status = in.readLine();
-
-        System.out.print("Hire date (yyyy-mm-dd): ");
-        String hireDate = in.readLine();
-
-        System.out.print("Working hours per week: ");
-        int hours;
-        try {
-            hours = in.readInt("Invalid working hours.");
-        } catch (IllegalArgumentException e) {
-            out.error(e.getMessage());
-            return;
-        }
-
-        try {
-            Employee created = empService.createEmployee(
-                    firstName, lastName, role, status, hireDate, hours
-            );
-            out.info("Employee created: " + created.getEmail());
-        } catch (RuntimeException e) {
-            out.error(e.getMessage());
-        }
-    }
-
-    private void searchEmployee() {
-        out.section("Search Employee");
-        System.out.println("1. By ID");
-        System.out.println("2. By last name");
-        System.out.println("3. Return");
-
-        switch (in.readMenuNumber(3)) {
-            case 1 -> {
-                System.out.print("Enter ID: ");
-                try {
-                    int id = in.readInt("Invalid ID.");
-                    empService.findEmployeeByID(id)
-                            .ifPresentOrElse(
-                                    e -> out.employeeTable(List.of(e)),
-                                    () -> out.error("Employee not found.")
-                            );
-                } catch (IllegalArgumentException e) {
-                    out.error(e.getMessage());
-                }
-            }
-            case 2 -> {
-                System.out.print("Enter last name: ");
-                String name = in.readLine();
-                out.employeeTable(empService.findEmployeesByLastName(name));
             }
         }
     }

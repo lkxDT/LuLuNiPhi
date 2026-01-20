@@ -289,7 +289,7 @@ public class UI {
                     String hireDate = inputScanner.nextLine();
                     if (hireDate.isBlank()) hireDate = emp.getHireDate();
 
-                    Integer workingHours;
+                    int workingHours;
                     System.out.print("Working hours [" + emp.getWorkingHours() + "]: ");
                     String whStr = inputScanner.nextLine().trim();
                     if (whStr.isBlank()) {

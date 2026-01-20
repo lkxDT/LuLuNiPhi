@@ -1,13 +1,16 @@
 package de.htwsaar.communication;
 
 import java.util.Scanner;
+import de.htwsaar.communication.OutputRenderer;
 
 public class InputReader {
 
     private final Scanner scanner;
+    private final OutputRenderer out;
 
     public InputReader(Scanner scanner) {
         this.scanner = scanner;
+        this.out = new OutputRenderer();
     }
 
     public int readMenuNumber(int max) {
@@ -15,19 +18,19 @@ public class InputReader {
             String input = scanner.nextLine();
 
             if (input.contains(".") || input.contains(",")) {
-                System.out.println("[ERROR] Please enter a whole number.");
+                out.error("Please enter a whole number.");
                 continue;
             }
 
             try {
                 int value = Integer.parseInt(input);
                 if (value < 1 || value > max) {
-                    System.out.println("[ERROR] Enter a number between 1 and " + max);
+                    out.error("Enter a number between 1 and " + max);
                     continue;
                 }
                 return value;
             } catch (NumberFormatException e) {
-                System.out.println("[ERROR] Invalid input.");
+                out.error("Invalid input.");
             }
         }
     }
