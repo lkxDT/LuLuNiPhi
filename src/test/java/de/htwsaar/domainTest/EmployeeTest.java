@@ -23,7 +23,7 @@ class EmployeeTest {
                 () -> assertEquals(40, emp.getWorkingHours())
         );
 
-        System.out.println("\u001B[32m✔ Employee Creation Test Passed\u001B[0m");
+        System.err.println("\u001B[32m✔ Employee Creation Test Passed\u001B[0m");
     }
 
 
@@ -40,6 +40,6 @@ class EmployeeTest {
 
         assertTrue(output.startsWith("   99"), "ID formatting (padding) is incorrect");
 
-        System.out.println("\u001B[32m✔ Employee toString Formatting Test Passed\u001B[0m");
+        System.err.println("\u001B[32m✔ Employee toString Formatting Test Passed\u001B[0m");
     }
 }

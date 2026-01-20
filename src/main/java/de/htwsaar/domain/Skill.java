@@ -3,7 +3,7 @@ package de.htwsaar.domain;
 public class Skill {
     private final int id;
     private final String name;
-    public final String category;
+    private final String category;
 
     public Skill(int id, String name, String category) {
         this.id = id;
