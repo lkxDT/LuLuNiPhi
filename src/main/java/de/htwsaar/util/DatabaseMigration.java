@@ -8,8 +8,7 @@ import de.htwsaar.repository.SQLConnection;
 
 public class DatabaseMigration {
 
-    private static final String DB_PATH = "data/employees.db";
-    private static final String DB_URL  = "jdbc:sqlite:" + DB_PATH;
+    private static final String DB_PATH = SQLConnection.DB_PATH;
 
     public static void migrate() {
         try {

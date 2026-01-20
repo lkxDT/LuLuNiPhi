@@ -3,7 +3,6 @@ package de.htwsaar.UITests;
 import de.htwsaar.application.CertificateService;
 import de.htwsaar.application.EmployeeService;
 import de.htwsaar.application.SkillService;
-import de.htwsaar.communication.UI;
 import de.htwsaar.repositoryTest.MockEmployeeRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
