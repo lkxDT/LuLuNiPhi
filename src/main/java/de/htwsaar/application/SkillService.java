@@ -30,7 +30,7 @@ public class SkillService {
     }
 
     public void assignSkill(int empId, int skillId, int level, String sinceDate) {
-
+        validateSkillLevel(level);
         if (employeeSkillRepo.existsAssignment(empId, skillId)) {
             throw new IllegalStateException(
                     "This skill is already assigned to the employee."
@@ -63,16 +63,17 @@ public class SkillService {
     }
 
     public Skill createSkill(String name, String category) {
-        if (invalid(name) || invalid(category)) {
-            throw new IllegalArgumentException("Skill name and category must be filled out.");
+        validateNotEmpty(name);
+        validateNotEmpty(category);
+        if(skillRepo.findByName(name).isPresent()) {
+            throw new IllegalArgumentException("Skill already exists");
         }
         return skillRepo.save(name.trim(), category.trim());
     }
 
     public void updateSkill(Skill skill) {
-        if (invalid(skill.getName()) || invalid(skill.getCategory())) {
-            throw new IllegalArgumentException("Skill name and category must be filled out.");
-        }
+        validateNotEmpty(skill.getName());
+        validateNotEmpty(skill.getCategory());
         skillRepo.update(skill);
     }
 
@@ -80,7 +81,15 @@ public class SkillService {
         return employeeSkillRepo.findSkillsByEmployeeId(empId);
     }
 
-    private boolean invalid(String v) {
-        return v == null || v.isBlank();
+    private void validateNotEmpty(String str) throws IllegalArgumentException{
+        if (str == null || str.isBlank()) {
+            throw new IllegalArgumentException("This name or category cannot be empty");
+        }
+    }
+
+    private void validateSkillLevel(int level) throws IllegalArgumentException {
+        if (level < 1 || level > 5) {
+            throw new IllegalArgumentException("Level must be between 1 and 5.");
+        }
     }
 }
