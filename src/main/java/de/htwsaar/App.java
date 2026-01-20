@@ -32,6 +32,7 @@ public class App
             var certService = new CertificateService(certRepo);
 
             var userIn = new ConsoleUI();
+            userIn.start(empService, skillService, certService);
 
             //userIn.showStartupBanner();
             //userIn.startMainMenu();

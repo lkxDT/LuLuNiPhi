@@ -1,25 +1,38 @@
 package de.htwsaar.communication;
 
+import java.util.List;
+
+import de.htwsaar.domain.AssignedSkill;
+import de.htwsaar.domain.Certificate;
 import de.htwsaar.domain.Employee;
 import de.htwsaar.domain.Skill;
-import de.htwsaar.domain.Certificate;
 import de.htwsaar.util.AnsiColorUtil;
-import java.util.List;
 
 public class OutputRenderer {
 
     public void section(String title) {
         System.out.println("==================================================");
-        System.out.println(title);
+        System.out.println(AnsiColorUtil.GREEN + title + AnsiColorUtil.RESET);
         System.out.println("==================================================");
     }
 
     public void info(String msg) {
-        System.out.println(AnsiColorUtil.colorizeStatus(AnsiColorUtil.GREEN, 6)+ "[INFO] " + msg);
+        System.out.println(AnsiColorUtil.YELLOW + "[INFO] " + AnsiColorUtil.RESET + msg);
     }
 
     public void error(String msg) {
-        System.out.println(AnsiColorUtil.colorizeStatus(AnsiColorUtil.RED, 7)+ "[ERROR] " + msg);
+        System.out.println(AnsiColorUtil.RED + "[ERROR] "+ AnsiColorUtil.RESET + msg);
+    }
+
+    public void printStartupBanner() {
+        String CYAN = "\u001B[36m";
+        String RESET = "\u001B[0m";
+
+        System.out.println(CYAN + "========================================");
+        System.out.println("            LuLuNiPhi 2.0");
+        System.out.println("      Employee Management System");
+        System.out.println("========================================" + RESET);
+        System.out.println();
     }
 
     public void employeeTable(List<Employee> employees) {
@@ -69,7 +82,6 @@ public class OutputRenderer {
         System.out.println("--------------------------------------------------------------");
     }
 
-
     public void certificateTable(List<Certificate> certs) {
         if (certs == null || certs.isEmpty()) {
             info("No certificates found.");
@@ -83,7 +95,9 @@ public class OutputRenderer {
 
         for (Certificate cert : certs) {
             String renewal = cert.isRequiresRenewal() ? "YES" : "NO";
-            String cycle = cert.getRenewalCycleMonths() != null ? cert.getRenewalCycleMonths().toString() : "-";
+            String cycle = cert.getRenewalCycleMonths() != null
+                    ? cert.getRenewalCycleMonths().toString()
+                    : "-";
 
             System.out.printf("%-3d | %-25s | %-12s | %-10s | %-10s | %-15s%n",
                     cert.getId(),
@@ -95,5 +109,28 @@ public class OutputRenderer {
         }
 
         System.out.println("---------------------------------------------------------------------------------------------");
+    }
+
+    public void assignedSkillTable(List<AssignedSkill> skills) {
+        if (skills.isEmpty()) {
+            info("No skills assigned.");
+            return;
+        }
+
+        System.out.println("-------------------------------------------------------------------------------------");
+        System.out.printf("%-3s | %-25s | %-20s | %-5s | %-10s%n",
+                "ID", "Skill", "Category", "Lvl", "Since");
+        System.out.println("-------------------------------------------------------------------------------------");
+
+        for (AssignedSkill s : skills) {
+            System.out.printf("%-3d | %-25s | %-20s | %-5d | %-10s%n",
+                    s.getSkillId(),
+                    s.getName(),
+                    s.getCategory(),
+                    s.getLevel(),
+                    s.getSinceDate());
+        }
+
+        System.out.println("-------------------------------------------------------------------------------------");
     }
 }

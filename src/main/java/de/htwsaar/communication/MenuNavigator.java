@@ -1,19 +1,34 @@
 package de.htwsaar.communication;
 
-import de.htwsaar.communication.employee.*;
-import de.htwsaar.communication.skill.*;
-import de.htwsaar.communication.certificate.*;
+import de.htwsaar.communication.certificate.CertificateMenu;
+import de.htwsaar.communication.employee.EmployeeMenu;
+import de.htwsaar.communication.skill.SkillMenu;
+
 public class MenuNavigator {
 
-    private boolean exit = false;
+    private final EmployeeMenu employeeMenu;
+    private final SkillMenu skillMenu;
+    private final CertificateMenu certificateMenu;
+    private final InputReader in;
+    private final OutputRenderer out;
 
-    public void mainLoop(
-            EmployeeMenu empMenu,
+    public MenuNavigator(
+            EmployeeMenu employeeMenu,
             SkillMenu skillMenu,
-            CertificateMenu certMenu,
+            CertificateMenu certificateMenu,
             InputReader in,
             OutputRenderer out
     ) {
+        this.employeeMenu = employeeMenu;
+        this.skillMenu = skillMenu;
+        this.certificateMenu = certificateMenu;
+        this.in = in;
+        this.out = out;
+    }
+
+    public void run() {
+        boolean exit = false;
+
         while (!exit) {
             out.section("Main Menu");
             System.out.println("1. Employees");
@@ -22,9 +37,9 @@ public class MenuNavigator {
             System.out.println("4. Exit");
 
             switch (in.readMenuNumber(4)) {
-                case 1 -> empMenu.show();
+                case 1 -> employeeMenu.show();
                 case 2 -> skillMenu.show();
-                case 3 -> certMenu.show();
+                case 3 -> certificateMenu.show();
                 case 4 -> exit = true;
             }
         }
