@@ -6,18 +6,23 @@ import de.htwsaar.application.CertificateService;
 import de.htwsaar.communication.InputReader;
 import de.htwsaar.communication.OutputRenderer;
 import de.htwsaar.domain.Certificate;
+import de.htwsaar.communication.certificate.CertificateAssignMenu;
+import de.htwsaar.application.EmployeeService;
 
 public class CertificateMenu {
 
     private final CertificateService certService;
     private final InputReader in;
     private final OutputRenderer out;
+    private final EmployeeService empService;
 
     public CertificateMenu(
+            EmployeeService empService,
             CertificateService certService,
             InputReader in,
             OutputRenderer out
     ) {
+        this.empService = empService;
         this.certService = certService;
         this.in = in;
         this.out = out;
@@ -32,14 +37,16 @@ public class CertificateMenu {
             System.out.println("2. Show details");
             System.out.println("3. Add");
             System.out.println("4. Change");
-            System.out.println("5. Return");
+            System.out.println("5. Assign certificate to employee");
+            System.out.println("6. Return");
 
-            switch (in.readMenuNumber(5)) {
+            switch (in.readMenuNumber(6)) {
                 case 1 -> out.certificateTable(certService.findAllCertificates());
                 case 2 -> CertificateShowDetailsMenu.show(out, in, certService);
                 case 3 -> CertificateAddMenu.show(out, in, certService);
                 case 4 -> CertificateChangeMenu.show(out, in, certService);
-                case 5 -> back = true;
+                case 5 -> CertificateAssignMenu.show(out, in, empService, certService);
+                case 6 -> back = true;
             }
         }
     }

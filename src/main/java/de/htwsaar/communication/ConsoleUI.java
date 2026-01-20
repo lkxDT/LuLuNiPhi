@@ -28,7 +28,7 @@ public class ConsoleUI {
                 new SkillMenu(skillService, in, out);
 
         CertificateMenu certificateMenu =
-                new CertificateMenu(certService, in, out);
+                new CertificateMenu(empService, certService, in, out);
 
         MenuNavigator navigator = new MenuNavigator(
                 employeeMenu,

@@ -1,7 +1,5 @@
 package de.htwsaar.communication.employee;
 
-import java.util.List;
-
 import de.htwsaar.application.EmployeeService;
 import de.htwsaar.application.SkillService;
 import de.htwsaar.communication.InputReader;
