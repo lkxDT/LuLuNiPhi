@@ -22,7 +22,7 @@ public class ConsoleUI {
         OutputRenderer out = new OutputRenderer();
 
         EmployeeMenu employeeMenu =
-                new EmployeeMenu(empService, skillService, in, out);
+                new EmployeeMenu(empService, skillService, certService, in, out);
 
         SkillMenu skillMenu =
                 new SkillMenu(skillService, in, out);
