@@ -1,12 +1,9 @@
 package de.htwsaar.communication.employeeSkill;
 
-import java.util.List;
-
 import de.htwsaar.application.EmployeeService;
 import de.htwsaar.application.SkillService;
 import de.htwsaar.communication.InputReader;
 import de.htwsaar.communication.OutputRenderer;
-import de.htwsaar.domain.AssignedSkill;
 
 public class EmployeeSkillMenu {
 
@@ -35,13 +32,15 @@ public class EmployeeSkillMenu {
             System.out.println("1. Assign skill");
             System.out.println("2. Show skills");
             System.out.println("3. Update assignment");
-            System.out.println("4. Return");
+            System.out.println("4. Remove skill");
+            System.out.println("5. Return");
 
-            switch (in.readMenuNumber(4)) {
+            switch (in.readMenuNumber(5)) {
                 case 1 -> EmployeeSkillAssignMenu.show(out, in, empService, skillService);
                 case 2 -> EmployeeSkillShowMenu.show(out, in, skillService);
                 case 3 -> EmployeeSkillUpdateMenu.show(out, in, skillService);
-                case 4 -> back = true;
+                case 4 -> EmployeeSkillRemoveMenu.show(out, in, skillService);
+                case 5 -> back = true;
             }
         }
     }
