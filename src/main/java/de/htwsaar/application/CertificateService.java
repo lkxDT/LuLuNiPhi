@@ -43,7 +43,11 @@ public class CertificateService {
         if (invalid(name) || invalid(category) || invalid(issuerType)) {
             throw new IllegalArgumentException("Name, category and issuer type must be filled out.");
         }
-
+        if (repo.existsByNameAndIssuer(name, issuerType)) {
+            throw new IllegalArgumentException(
+                    "Certificate' " + name + "' from issuer'" + issuerType + "' already exists."
+            );
+        }
         if (requiresRenewal) {
             if (renewalCycleMonths == null || renewalCycleMonths <= 0) {
                 throw new IllegalArgumentException("Renewal cycle must be greater than 0 if renewal is required.");

@@ -142,4 +142,18 @@ public class CertificateRepository {
             throw new RuntimeException("Database error occurred", e);
         }
     }
+    public boolean existsByNameAndIssuer(String name, String issuerType) {
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "SELECT 1 FROM certificate WHERE LOWER(name) = LOWER(?) AND LOWER(issuer_type) = LOWER(?) LIMIT 1"
+        )) {
+            stmt.setString(1, name.trim());
+            stmt.setString(2, issuerType.trim());
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error while checking certificate existence", e);
+        }
+    }
 }
