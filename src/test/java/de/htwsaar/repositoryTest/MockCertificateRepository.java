@@ -23,4 +23,13 @@ public class MockCertificateRepository extends CertificateRepository {
         certs.add(c);
         return c;
     }
+
+    @Override
+    public boolean existsByNameAndIssuer(String name, String issuer) {
+        if (name == null || issuer == null) return false;
+
+
+        return certs.stream()
+                .anyMatch(c -> c.getName().equalsIgnoreCase(name.trim()));
+    }
 }
