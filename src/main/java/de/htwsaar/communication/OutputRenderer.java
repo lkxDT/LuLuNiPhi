@@ -7,6 +7,7 @@ import de.htwsaar.domain.Certificate;
 import de.htwsaar.domain.Employee;
 import de.htwsaar.domain.Skill;
 import de.htwsaar.util.AnsiColorUtil;
+import de.htwsaar.domain.AssignedCertificate;
 
 public class OutputRenderer {
 
@@ -132,5 +133,32 @@ public class OutputRenderer {
         }
 
         System.out.println("-------------------------------------------------------------------------------------");
+    }
+    public void employeeCertificateTable(List<AssignedCertificate> certs) {
+        if (certs == null || certs.isEmpty()) {
+            info("No certificates assigned.");
+            return;
+        }
+
+        System.out.println("---------------------------------------------------------------------------------------------------------------");
+        System.out.printf("%-3s | %-25s | %-12s | %-10s | %-10s | %-12s | %-8s%n",
+                "ID", "Name", "Category", "Valid from", "Valid until", "Cert-No", "Status");
+        System.out.println("---------------------------------------------------------------------------------------------------------------");
+
+        for (AssignedCertificate c : certs) {
+            String validUntil = (c.getValidUntil() == null ? "-" : c.getValidUntil());
+            String certNo = (c.getCertificateNumber() == null ? "-" : c.getCertificateNumber());
+
+            System.out.printf("%-3d | %-25s | %-12s | %-10s | %-10s | %-12s | %-8s%n",
+                    c.getCertificateId(),
+                    c.getName(),
+                    c.getCategory(),
+                    c.getValidFrom(),
+                    validUntil,
+                    certNo,
+                    c.getStatus());
+        }
+
+        System.out.println("---------------------------------------------------------------------------------------------------------------");
     }
 }

@@ -4,6 +4,7 @@ import de.htwsaar.domain.Certificate;
 import de.htwsaar.repository.CertificateRepository;
 import de.htwsaar.repository.EmployeeCertificateRepository;
 import de.htwsaar.util.DateFormatChecker;
+import de.htwsaar.domain.AssignedCertificate;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -106,5 +107,15 @@ public class CertificateService {
 
     private boolean invalid(String v) {
         return v == null || v.isBlank();
+    }
+
+    public List<AssignedCertificate> findCertificatesOfEmployee(int employeeId) {
+        if (employeeCertRepo == null) {
+            throw new IllegalStateException("EmployeeCertificateRepository not configured.");
+        }
+        if (employeeId <= 0) {
+            throw new IllegalArgumentException("Invalid employee ID.");
+        }
+        return employeeCertRepo.findByEmployeeId(employeeId);
     }
 }
