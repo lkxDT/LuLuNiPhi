@@ -102,4 +102,15 @@ public class EmployeeService {
     public void updateEmployee(Employee employee) {
         repo.update(employee);
     }
+
+    public void deleteEmployeeById(int employeeId) {
+        if (employeeId <= 0) {
+            throw new IllegalArgumentException("Invalid employee ID.");
+        }
+
+        boolean deleted = repo.deleteById(employeeId);
+        if (!deleted) {
+            throw new IllegalArgumentException("Employee with ID " + employeeId + " not found.");
+        }
+    }
 }

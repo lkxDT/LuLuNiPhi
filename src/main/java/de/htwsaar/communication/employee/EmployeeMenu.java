@@ -35,16 +35,18 @@ public class EmployeeMenu {
             System.out.println("2. Add");
             System.out.println("3. Search");
             System.out.println("4. Change");
-            System.out.println("5. Employee Skills");
-            System.out.println("6. Return");
+            System.out.println("5. Delete Employee");
+            System.out.println("6. Employee Skills");
+            System.out.println("7. Return");
 
-            switch (in.readMenuNumber(6)) {
+            switch (in.readMenuNumber(7)) {
                 case 1 -> out.employeeTable(empService.findAllEmployees());
                 case 2 -> EmployeeAddMenu.show(out, in, empService);
                 case 3 -> EmployeeSearchMenu.show(out, in, empService);
                 case 4 -> EmployeeChangeMenu.show(out, in, empService);
-                case 5 -> new EmployeeSkillMenu(empService, skillService, in, out).show();
-                case 6 -> back = true;
+                case 5 -> EmployeeDeleteMenu.show(out, in, empService);
+                case 6 -> new EmployeeSkillMenu(empService, skillService, in, out).show();
+                case 7 -> back = true;
             }
         }
     }

@@ -174,4 +174,44 @@ public class EmployeeRepository {
             throw new RuntimeException("Database error occurred while updating employee", e);
         }
     }
+    public boolean deleteById(int employeeId) {
+        try {
+            conn.setAutoCommit(false);
+
+            // Skills-Zuordnungen löschen (Join-Tabelle)
+            try (PreparedStatement stmt = conn.prepareStatement(
+                    "DELETE FROM employee_skill WHERE employee_id = ?")) {
+                stmt.setInt(1, employeeId);
+                stmt.executeUpdate();
+            } catch (SQLException ignored) {
+                // Falls eure Join-Tabelle anders heißt, werfen wir gleich unten die richtige Exception
+            }
+
+            // Certificates-Zuordnungen löschen (Join-Tabelle)
+            try (PreparedStatement stmt = conn.prepareStatement(
+                    "DELETE FROM employee_certificate WHERE employee_id = ?")) {
+                stmt.setInt(1, employeeId);
+                stmt.executeUpdate();
+            } catch (SQLException ignored) {
+            }
+
+            // Mitarbeiter löschen
+            int affected;
+            try (PreparedStatement stmt = conn.prepareStatement(
+                    "DELETE FROM employee WHERE id = ?")) {
+                stmt.setInt(1, employeeId);
+                affected = stmt.executeUpdate();
+            }
+
+            conn.commit();
+            return affected > 0;
+
+        } catch (SQLException e) {
+            try { conn.rollback(); } catch (SQLException ignored) {}
+            throw new RuntimeException("Database error occurred while deleting employee: " + e.getMessage(), e);
+
+        } finally {
+            try { conn.setAutoCommit(true); } catch (SQLException ignored) {}
+        }
+    }
 }
