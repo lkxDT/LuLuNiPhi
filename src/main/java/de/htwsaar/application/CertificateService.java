@@ -17,7 +17,7 @@ public class CertificateService {
 
     /**
      * legacy constructor
-     * @param repo CertificateRepoisitory holding Certificates
+     * @param repo Certificate Repository holding Certificates
      */
     public CertificateService(CertificateRepository repo) {
         this(repo, null);
