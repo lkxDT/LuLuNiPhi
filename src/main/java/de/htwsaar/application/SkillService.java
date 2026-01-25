@@ -173,4 +173,12 @@ public class SkillService {
             throw new IllegalArgumentException("Level must be between 1 and 5.");
         }
     }
+    public void deleteSkillById(int skillId) {
+        if (skillId <= 0) throw new IllegalArgumentException("Invalid skill ID.");
+
+        boolean deleted = skillRepo.deleteById(skillId);
+        if (!deleted) {
+            throw new IllegalArgumentException("Skill with ID " + skillId + " not found.");
+        }
+    }
 }

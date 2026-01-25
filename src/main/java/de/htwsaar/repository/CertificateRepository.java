@@ -156,4 +156,22 @@ public class CertificateRepository {
             throw new RuntimeException("Database error while checking certificate existence", e);
         }
     }
+    public boolean deleteById(int certId) {
+        // sicherheitshalber Join-Tabelle löschen
+        try (PreparedStatement j = conn.prepareStatement(
+                "DELETE FROM employee_certificate WHERE certificate_id = ?")) {
+            j.setInt(1, certId);
+            j.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error while deleting from employee_certificate", e);
+        }
+
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "DELETE FROM certificate WHERE id = ?")) {
+            stmt.setInt(1, certId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error while deleting certificate", e);
+        }
+    }
 }

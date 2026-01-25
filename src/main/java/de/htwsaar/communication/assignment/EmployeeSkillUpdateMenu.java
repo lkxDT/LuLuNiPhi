@@ -1,15 +1,13 @@
-package de.htwsaar.communication.employeeSkill;
+package de.htwsaar.communication.assignment;
 
 import de.htwsaar.application.SkillService;
-import de.htwsaar.application.EmployeeService;
 import de.htwsaar.communication.InputReader;
 import de.htwsaar.communication.OutputRenderer;
 import de.htwsaar.domain.AssignedSkill;
 
 import java.util.List;
 
-public class EmployeeSkillRemoveMenu {
-
+public class EmployeeSkillUpdateMenu {
     protected static void show(OutputRenderer out, InputReader in, SkillService skillService) {
         System.out.print("Employee ID: ");
         int empId;
@@ -20,7 +18,8 @@ public class EmployeeSkillRemoveMenu {
             return;
         }
 
-        List<AssignedSkill> skills = skillService.findSkillsOfEmployee(empId);
+        List<AssignedSkill> skills =
+                skillService.findSkillsOfEmployee(empId);
 
         if (skills.isEmpty()) {
             out.info("No skills assigned.");
@@ -29,7 +28,7 @@ public class EmployeeSkillRemoveMenu {
 
         out.assignedSkillTable(skills);
 
-        System.out.print("Skill ID to remove: ");
+        System.out.print("Skill ID: ");
         int skillId;
         try {
             skillId = in.readInt("Invalid skill ID.");
@@ -48,16 +47,17 @@ public class EmployeeSkillRemoveMenu {
             return;
         }
 
-        System.out.print("Are you sure you want to remove this skill? (y/N): ");
-        String confirm = in.readLine();
-        if (!confirm.equalsIgnoreCase("y")) {
-            out.info("Removal canceled.");
-            return;
-        }
+        System.out.print("Level [" + existing.getLevel() + "]: ");
+        String lvl = in.readLine();
+        int newLevel = lvl.isBlank() ? existing.getLevel() : Integer.parseInt(lvl);
+
+        System.out.print("Since [" + existing.getSinceDate() + "]: ");
+        String since = in.readLine();
+        if (since.isBlank()) since = existing.getSinceDate();
 
         try {
-            skillService.removeSkillFromEmployee(empId, skillId);
-            out.info("Skill removed from employee.");
+            skillService.updateSkillAssignment(empId, skillId, newLevel, since);
+            out.info("Skill updated.");
         } catch (RuntimeException e) {
             out.error(e.getMessage());
         }

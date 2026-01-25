@@ -1,11 +1,8 @@
 package de.htwsaar.communication.skill;
 
-import java.util.List;
-
 import de.htwsaar.application.SkillService;
 import de.htwsaar.communication.InputReader;
 import de.htwsaar.communication.OutputRenderer;
-import de.htwsaar.domain.Skill;
 
 public class SkillMenu {
 
@@ -13,11 +10,7 @@ public class SkillMenu {
     private final InputReader in;
     private final OutputRenderer out;
 
-    public SkillMenu(
-            SkillService skillService,
-            InputReader in,
-            OutputRenderer out
-    ) {
+    public SkillMenu(SkillService skillService, InputReader in, OutputRenderer out) {
         this.skillService = skillService;
         this.in = in;
         this.out = out;
@@ -28,18 +21,20 @@ public class SkillMenu {
 
         while (!back) {
             out.section("Skills");
-            System.out.println("1. Show all");
-            System.out.println("2. Add");
-            System.out.println("3. Search");
-            System.out.println("4. Change");
-            System.out.println("5. Return");
+            System.out.println("1. Show All");
+            System.out.println("2. Search Skill");
+            System.out.println("3. Add Skill");
+            System.out.println("4. Change Skill");
+            System.out.println("5. Delete Skill");
+            System.out.println("6. Return");
 
-            switch (in.readMenuNumber(5)) {
+            switch (in.readMenuNumber(6)) {
                 case 1 -> out.skillTable(skillService.findAllSkills());
-                case 2 -> SkillAddMenu.show(out, in, skillService);
-                case 3 -> SkillSearchMenu.show(out, in, skillService);
+                case 2 -> SkillSearchMenu.show(out, in, skillService);
+                case 3 -> SkillAddMenu.show(out, in, skillService);
                 case 4 -> SkillChangeMenu.show(out, in, skillService);
-                case 5 -> back = true;
+                case 5 -> SkillDeleteMenu.show(out, in, skillService);
+                case 6 -> back = true;
             }
         }
     }

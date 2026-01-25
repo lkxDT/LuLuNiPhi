@@ -86,4 +86,57 @@ public class EmployeeCertificateRepository {
             throw new RuntimeException("Database error occurred while loading employee certificates: " + e.getMessage(), e);
         }
     }
+    public boolean existsAssignment(int employeeId, int certificateId) {
+        String sql = "SELECT 1 FROM employee_certificate WHERE employee_id = ? AND certificate_id = ? LIMIT 1";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, employeeId);
+            stmt.setInt(2, certificateId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error while checking certificate assignment", e);
+        }
+    }
+
+    public void updateAssignment(int employeeId,
+                                 int certificateId,
+                                 String validFrom,
+                                 String validUntil,
+                                 String certificateNumber,
+                                 String status) {
+        String sql =
+                "UPDATE employee_certificate SET valid_from = ?, valid_until = ?, certificate_number = ?, status = ? " +
+                        "WHERE employee_id = ? AND certificate_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, validFrom);
+            stmt.setString(2, validUntil);
+            stmt.setString(3, certificateNumber);
+            stmt.setString(4, status);
+            stmt.setInt(5, employeeId);
+            stmt.setInt(6, certificateId);
+
+            int updated = stmt.executeUpdate();
+            if (updated == 0) {
+                throw new IllegalStateException("No assignment found for this employee and certificate.");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error while updating certificate assignment", e);
+        }
+    }
+
+    public void removeAssignment(int employeeId, int certificateId) {
+        String sql = "DELETE FROM employee_certificate WHERE employee_id = ? AND certificate_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, employeeId);
+            stmt.setInt(2, certificateId);
+
+            int deleted = stmt.executeUpdate();
+            if (deleted == 0) {
+                throw new IllegalStateException("No assignment found for this employee and certificate.");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error while removing certificate assignment", e);
+        }
+    }
 }

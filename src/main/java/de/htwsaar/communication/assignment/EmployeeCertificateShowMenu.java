@@ -1,4 +1,4 @@
-package de.htwsaar.communication.employee;
+package de.htwsaar.communication.assignment;
 
 import de.htwsaar.application.CertificateService;
 import de.htwsaar.application.EmployeeService;

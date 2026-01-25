@@ -163,4 +163,58 @@ public class CertificateService {
         }
         return employeeCertRepo.findByEmployeeId(employeeId);
     }
+    public void deleteCertificateById(int certId) {
+        if (certId <= 0) throw new IllegalArgumentException("Invalid certificate ID.");
+
+        boolean deleted = repo.deleteById(certId);
+        if (!deleted) {
+            throw new IllegalArgumentException("Certificate with ID " + certId + " not found.");
+        }
+    }
+    public void updateCertificateAssignment(int employeeId,
+                                            int certificateId,
+                                            String assignedDate,
+                                            String certificateNumber,
+                                            String status) {
+
+        if (employeeCertRepo == null) {
+            throw new IllegalStateException("EmployeeCertificateRepository not configured.");
+        }
+
+        if (assignedDate == null || assignedDate.isBlank() || !DateFormatChecker.check(assignedDate)) {
+            throw new IllegalArgumentException("Invalid assigned date. Use yyyy-mm-dd.");
+        }
+
+        if (!employeeCertRepo.existsAssignment(employeeId, certificateId)) {
+            throw new IllegalStateException("This certificate is not assigned to the employee.");
+        }
+
+        Certificate cert = repo.findById(certificateId)
+                .orElseThrow(() -> new IllegalArgumentException("Certificate with ID " + certificateId + " not found."));
+
+        String validFrom = assignedDate;
+        String validUntil = null;
+
+        if (cert.isRequiresRenewal()) {
+            Integer cycle = cert.getRenewalCycleMonths();
+            if (cycle != null && cycle > 0) {
+                validUntil = java.time.LocalDate.parse(assignedDate).plusMonths(cycle).toString();
+            }
+        }
+
+        String normalizedStatus = (status == null || status.isBlank()) ? "ACTIVE" : status.trim().toUpperCase();
+        String certNo = (certificateNumber == null || certificateNumber.isBlank()) ? null : certificateNumber.trim();
+
+        employeeCertRepo.updateAssignment(employeeId, certificateId, validFrom, validUntil, certNo, normalizedStatus);
+    }
+
+    public void removeCertificateFromEmployee(int employeeId, int certificateId) {
+        if (employeeCertRepo == null) {
+            throw new IllegalStateException("EmployeeCertificateRepository not configured.");
+        }
+        if (!employeeCertRepo.existsAssignment(employeeId, certificateId)) {
+            throw new IllegalStateException("This certificate is not assigned to the employee.");
+        }
+        employeeCertRepo.removeAssignment(employeeId, certificateId);
+    }
 }

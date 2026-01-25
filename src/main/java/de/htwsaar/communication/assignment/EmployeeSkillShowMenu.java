@@ -1,4 +1,4 @@
-package de.htwsaar.communication.employeeSkill;
+package de.htwsaar.communication.assignment;
 
 import de.htwsaar.application.SkillService;
 import de.htwsaar.communication.InputReader;

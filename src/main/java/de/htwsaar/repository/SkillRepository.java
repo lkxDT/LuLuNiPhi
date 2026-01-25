@@ -119,4 +119,22 @@ public class SkillRepository {
             throw new RuntimeException("Database error occurred", e);
         }
     }
+    public boolean deleteById(int skillId) {
+        // sicherheitshalber Join-Tabelle löschen (auch wenn FK-CASCADE aktiv ist)
+        try (PreparedStatement j = conn.prepareStatement(
+                "DELETE FROM employee_skill WHERE skill_id = ?")) {
+            j.setInt(1, skillId);
+            j.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error while deleting from employee_skill", e);
+        }
+
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "DELETE FROM skill WHERE id = ?")) {
+            stmt.setInt(1, skillId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException("Database error while deleting skill", e);
+        }
+    }
 }
