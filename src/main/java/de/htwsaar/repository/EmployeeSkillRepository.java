@@ -17,9 +17,6 @@ public class EmployeeSkillRepository {
         this.conn = conn;
     }
 
-    /**
-     * Assigns a skill to an employee
-     */
     public void assign(int employeeId, int skillId, int level, String sinceDate) {
         try (PreparedStatement stmt = conn.prepareStatement(
                 "INSERT INTO employee_skill (employee_id, skill_id, level, since_date) " +
@@ -33,13 +30,10 @@ public class EmployeeSkillRepository {
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            throw new RuntimeException("Database error occured", e);
+            throw new RuntimeException("Database error occurred", e);
         }
     }
 
-    /**
-     * Returns all skills assigned to a specific employee
-     */
     public List<AssignedSkill> findSkillsByEmployeeId(int employeeId) {
         List<AssignedSkill> result = new ArrayList<>();
 
@@ -65,7 +59,7 @@ public class EmployeeSkillRepository {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException("Database error occured", e);
+            throw new RuntimeException("Database error occurred", e);
         }
 
         return result;
@@ -83,8 +77,11 @@ public class EmployeeSkillRepository {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException("Database error occured", e);
+            throw new RuntimeException("Database error occurred", e);
         }
+    }
+    public boolean isNotAssigned(int employeeId, int skillId) {
+        return !existsAssignment(employeeId, skillId);
     }
 
     public void updateAssignment(int employeeId, int skillId, int level, String sinceDate) {
@@ -103,13 +100,10 @@ public class EmployeeSkillRepository {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException("Database error occured", e);
+            throw new RuntimeException("Database error occurred", e);
         }
     }
 
-    /**
-     * Removes a skill assignment from an employee
-     */
     public void removeAssignment(int employeeId, int skillId) {
         try (PreparedStatement stmt = conn.prepareStatement(
                 "DELETE FROM employee_skill WHERE employee_id = ? AND skill_id = ?")) {

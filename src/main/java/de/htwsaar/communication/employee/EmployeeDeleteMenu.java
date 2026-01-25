@@ -30,7 +30,7 @@ public class EmployeeDeleteMenu {
         out.info("You are about to permanently delete:");
         out.employeeTable(List.of(empOpt.get()));
 
-        out.error("This action cannot be undone.");
+        out.warning("This action cannot be undone.");
         System.out.print("Type DELETE to confirm: ");
         String confirm = in.readLine().trim();
 

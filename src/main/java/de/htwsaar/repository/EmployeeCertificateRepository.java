@@ -98,6 +98,9 @@ public class EmployeeCertificateRepository {
             throw new RuntimeException("Database error while checking certificate assignment", e);
         }
     }
+    public boolean isNotAssigned(int employeeId, int certificateId) {
+        return !existsAssignment(employeeId, certificateId);
+    }
 
     public void updateAssignment(int employeeId,
                                  int certificateId,
