@@ -1,11 +1,13 @@
 package de.htwsaar.communication.skill;
 
+import de.htwsaar.MuteConsoleExtension;
 import de.htwsaar.application.SkillService;
 import de.htwsaar.communication.InputReader;
 import de.htwsaar.communication.OutputRenderer;
 import de.htwsaar.domain.Skill;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -14,7 +16,6 @@ import java.util.List;
 import static org.easymock.EasyMock.*;
 
 class SkillSearchMenuTest {
-
     private OutputRenderer outMock;
     private SkillService serviceMock;
     private InputReader inMock;
@@ -26,7 +27,9 @@ class SkillSearchMenuTest {
         inMock = createMock(InputReader.class);
     }
 
+
     @Test
+    @ExtendWith(MuteConsoleExtension.class)
     void testSearchByIdNotFound() {
         expect(inMock.readMenuNumber(3)).andReturn(1);
         expect(inMock.readInt(anyString())).andReturn(999);
@@ -41,6 +44,7 @@ class SkillSearchMenuTest {
     }
 
     @Test
+    @ExtendWith(MuteConsoleExtension.class)
     void testSearchByIdSuccess() {
         expect(inMock.readMenuNumber(3)).andReturn(1);
         expect(inMock.readInt(anyString())).andReturn(1);
@@ -57,6 +61,7 @@ class SkillSearchMenuTest {
     }
 
     @Test
+    @ExtendWith(MuteConsoleExtension.class)
     void testExitMenuImmediately() {
         expect(inMock.readMenuNumber(3)).andReturn(3);
 
@@ -66,6 +71,7 @@ class SkillSearchMenuTest {
     }
 
     @Test
+    @ExtendWith(MuteConsoleExtension.class)
     void testSearchByNameSuccess() {
         expect(inMock.readMenuNumber(3)).andReturn(2);
         expect(inMock.readLine()).andReturn("Java");
@@ -85,6 +91,7 @@ class SkillSearchMenuTest {
     }
 
     @Test
+    @ExtendWith(MuteConsoleExtension.class)
     void testSearchByNameEmptyListHandover() {
         expect(inMock.readMenuNumber(3)).andReturn(2);
         expect(inMock.readLine()).andReturn("Unknown");
@@ -101,6 +108,7 @@ class SkillSearchMenuTest {
     }
 
     @Test
+    @ExtendWith(MuteConsoleExtension.class)
     void testServiceThrowsException() {
         expect(inMock.readMenuNumber(3)).andReturn(1);
         expect(inMock.readInt(anyString())).andReturn(1);
