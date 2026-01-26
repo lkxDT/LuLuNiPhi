@@ -6,6 +6,7 @@ import de.htwsaar.domain.AssignedSkill;
 import de.htwsaar.domain.Skill;
 import de.htwsaar.repository.EmployeeSkillRepository;
 import de.htwsaar.repository.SkillRepository;
+import de.htwsaar.util.DateFormatChecker;
 
 public class SkillService {
 
@@ -37,6 +38,12 @@ public class SkillService {
             );
         }
 
+        if (!DateFormatChecker.check(sinceDate)) {
+            throw new IllegalArgumentException(
+                    "The given date is not a valid date"
+            );
+        }
+
         employeeSkillRepo.assign(empId, skillId, level, sinceDate);
     }
 
@@ -44,8 +51,13 @@ public class SkillService {
         if (level < 1 || level > 5) {
             throw new IllegalArgumentException("Level must be between 1 and 5.");
         }
-        if (sinceDate == null || sinceDate.isBlank()) {
+        /*if (sinceDate == null || sinceDate.isBlank()) {
             throw new IllegalArgumentException("Since date must not be empty.");
+        }*/
+        if (!DateFormatChecker.check(sinceDate)) {
+            throw new IllegalArgumentException(
+                    "The given date is not a valid date"
+            );
         }
 
         employeeSkillRepo.updateAssignment(empId, skillId, level, sinceDate);

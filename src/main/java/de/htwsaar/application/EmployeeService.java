@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import de.htwsaar.domain.Employee;
 import de.htwsaar.repository.EmployeeRepository;
+import de.htwsaar.util.DateFormatChecker;
 
 
 public class EmployeeService {
@@ -30,6 +31,10 @@ public class EmployeeService {
 
         if (workingHours > 60) {
             throw new IllegalArgumentException("Working hours must not exceed 60 per week.");
+        }
+
+        if (!DateFormatChecker.check(hireDate)) {
+            throw new IllegalArgumentException("Hiring date is not a valid date");
         }
 
         // Automatically generates the email address
