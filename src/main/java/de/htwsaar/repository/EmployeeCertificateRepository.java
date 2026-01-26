@@ -1,21 +1,26 @@
 package de.htwsaar.repository;
 
 import de.htwsaar.domain.AssignedCertificate;
+import org.jooq.DSLContext;
+import org.jooq.Record;
+import org.jooq.exception.DataAccessException;
+
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.List;
+
+import static de.htwsaar.jooq.tables.Certificate.CERTIFICATE;
+import static de.htwsaar.jooq.tables.EmployeeCertificate.EMPLOYEE_CERTIFICATE;
+import static de.htwsaar.util.JooqContext.using;
 
 public class EmployeeCertificateRepository {
 
-    private final Connection conn;
+    private final DSLContext dsl;
 
     public EmployeeCertificateRepository(Connection conn) {
-        this.conn = conn;
+        this.dsl = using(conn);
     }
 
+    // --- ASSIGN (API: wie vorher) ---
     public void assign(int employeeId,
                        int certificateId,
                        String validFrom,
@@ -23,123 +28,128 @@ public class EmployeeCertificateRepository {
                        String certificateNumber,
                        String status) {
 
-        String sql =
-                "INSERT INTO employee_certificate " +
-                        "(employee_id, certificate_id, valid_from, valid_until, certificate_number, status) " +
-                        "VALUES (?, ?, ?, ?, ?, ?)";
+        try {
+            dsl.insertInto(EMPLOYEE_CERTIFICATE)
+                    .set(EMPLOYEE_CERTIFICATE.EMPLOYEE_ID, employeeId)
+                    .set(EMPLOYEE_CERTIFICATE.CERTIFICATE_ID, certificateId)
+                    .set(EMPLOYEE_CERTIFICATE.VALID_FROM, validFrom)
+                    .set(EMPLOYEE_CERTIFICATE.VALID_UNTIL, validUntil)            // may be null
+                    .set(EMPLOYEE_CERTIFICATE.CERTIFICATE_NUMBER, certificateNumber) // may be null
+                    .set(EMPLOYEE_CERTIFICATE.STATUS, status)
+                    .execute();
 
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+        } catch (DataAccessException e) {
+            String msg = (e.getMessage() == null) ? "" : e.getMessage().toLowerCase();
 
-            stmt.setInt(1, employeeId);
-            stmt.setInt(2, certificateId);
-            stmt.setString(3, validFrom);
-            stmt.setString(4, validUntil);          // darf null sein
-            stmt.setString(5, certificateNumber);   // darf null sein
-            stmt.setString(6, status);
-
-            stmt.executeUpdate();
-
-        } catch (SQLException e) {
-            String msg = e.getMessage() == null ? "" : e.getMessage().toLowerCase();
-            // UNIQUE/PK verletzt -> schon zugewiesen
-            if (msg.contains("unique") || msg.contains("constraint")) {
-                throw new IllegalStateException("This certificate is already assigned to the employee.");
+            // only treat UNIQUE/PK as "already assigned"
+            if (msg.contains("unique constraint failed") || msg.contains("primary key")) {
+                throw new IllegalStateException("This certificate is already assigned to the employee.", e);
+            }
+            if (msg.contains("foreign key constraint failed")) {
+                throw new IllegalStateException("Invalid employee or certificate id (foreign key constraint failed).", e);
             }
             throw new RuntimeException("Database error occurred while assigning certificate: " + e.getMessage(), e);
         }
     }
 
-    public List<AssignedCertificate> findByEmployeeId(int employeeId) {
-        String sql =
-                "SELECT " +
-                        "  c.id AS certificate_id, c.name, c.category, c.issuer_type, " +
-                        "  ec.valid_from, ec.valid_until, ec.certificate_number, ec.status " +
-                        "FROM employee_certificate ec " +
-                        "JOIN certificate c ON c.id = ec.certificate_id " +
-                        "WHERE ec.employee_id = ? " +
-                        "ORDER BY c.name COLLATE NOCASE";
-
-
-        List<AssignedCertificate> result = new ArrayList<>();
-
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, employeeId);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    result.add(new AssignedCertificate(
-                            rs.getInt("certificate_id"),
-                            rs.getString("name"),
-                            rs.getString("category"),
-                            rs.getString("issuer_type"),
-                            rs.getString("valid_from"),
-                            rs.getString("valid_until"),
-                            rs.getString("certificate_number"),
-                            rs.getString("status")
-                    ));
-                }
-            }
-
-            return result;
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Database error occurred while loading employee certificates: " + e.getMessage(), e);
-        }
-    }
+    // --- EXISTS ---
     public boolean existsAssignment(int employeeId, int certificateId) {
-        String sql = "SELECT 1 FROM employee_certificate WHERE employee_id = ? AND certificate_id = ? LIMIT 1";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, employeeId);
-            stmt.setInt(2, certificateId);
-            try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next();
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Database error while checking certificate assignment", e);
+        try {
+            return dsl.fetchExists(
+                    dsl.selectOne()
+                            .from(EMPLOYEE_CERTIFICATE)
+                            .where(EMPLOYEE_CERTIFICATE.EMPLOYEE_ID.eq(employeeId))
+                            .and(EMPLOYEE_CERTIFICATE.CERTIFICATE_ID.eq(certificateId))
+            );
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Database error while checking certificate assignment: " + e.getMessage(), e);
         }
     }
+
     public boolean isNotAssigned(int employeeId, int certificateId) {
         return !existsAssignment(employeeId, certificateId);
     }
 
+    // --- FIND BY EMPLOYEE ---
+    public List<AssignedCertificate> findByEmployeeId(int employeeId) {
+        try {
+            return dsl.select(
+                            CERTIFICATE.ID.as("certificate_id"),
+                            CERTIFICATE.NAME,
+                            CERTIFICATE.CATEGORY,
+                            CERTIFICATE.ISSUER_TYPE,
+                            EMPLOYEE_CERTIFICATE.VALID_FROM,
+                            EMPLOYEE_CERTIFICATE.VALID_UNTIL,
+                            EMPLOYEE_CERTIFICATE.CERTIFICATE_NUMBER,
+                            EMPLOYEE_CERTIFICATE.STATUS
+                    )
+                    .from(EMPLOYEE_CERTIFICATE)
+                    .join(CERTIFICATE).on(CERTIFICATE.ID.eq(EMPLOYEE_CERTIFICATE.CERTIFICATE_ID))
+                    .where(EMPLOYEE_CERTIFICATE.EMPLOYEE_ID.eq(employeeId))
+                    .orderBy(CERTIFICATE.NAME.asc())
+                    .fetch(this::mapAssignedCertificate);
+
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Database error occurred while loading employee certificates: " + e.getMessage(), e);
+        }
+    }
+
+    // Alias falls dein Service so heißt
+    public List<AssignedCertificate> findCertificatesByEmployeeId(int employeeId) {
+        return findByEmployeeId(employeeId);
+    }
+
+    // --- UPDATE ---
     public void updateAssignment(int employeeId,
                                  int certificateId,
                                  String validFrom,
                                  String validUntil,
                                  String certificateNumber,
                                  String status) {
-        String sql =
-                "UPDATE employee_certificate SET valid_from = ?, valid_until = ?, certificate_number = ?, status = ? " +
-                        "WHERE employee_id = ? AND certificate_id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, validFrom);
-            stmt.setString(2, validUntil);
-            stmt.setString(3, certificateNumber);
-            stmt.setString(4, status);
-            stmt.setInt(5, employeeId);
-            stmt.setInt(6, certificateId);
+        try {
+            int updated = dsl.update(EMPLOYEE_CERTIFICATE)
+                    .set(EMPLOYEE_CERTIFICATE.VALID_FROM, validFrom)
+                    .set(EMPLOYEE_CERTIFICATE.VALID_UNTIL, validUntil)
+                    .set(EMPLOYEE_CERTIFICATE.CERTIFICATE_NUMBER, certificateNumber)
+                    .set(EMPLOYEE_CERTIFICATE.STATUS, status)
+                    .where(EMPLOYEE_CERTIFICATE.EMPLOYEE_ID.eq(employeeId))
+                    .and(EMPLOYEE_CERTIFICATE.CERTIFICATE_ID.eq(certificateId))
+                    .execute();
 
-            int updated = stmt.executeUpdate();
             if (updated == 0) {
                 throw new IllegalStateException("No assignment found for this employee and certificate.");
             }
-        } catch (SQLException e) {
-            throw new RuntimeException("Database error while updating certificate assignment", e);
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Database error while updating certificate assignment: " + e.getMessage(), e);
         }
     }
 
+    // --- REMOVE ---
     public void removeAssignment(int employeeId, int certificateId) {
-        String sql = "DELETE FROM employee_certificate WHERE employee_id = ? AND certificate_id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, employeeId);
-            stmt.setInt(2, certificateId);
+        try {
+            int deleted = dsl.deleteFrom(EMPLOYEE_CERTIFICATE)
+                    .where(EMPLOYEE_CERTIFICATE.EMPLOYEE_ID.eq(employeeId))
+                    .and(EMPLOYEE_CERTIFICATE.CERTIFICATE_ID.eq(certificateId))
+                    .execute();
 
-            int deleted = stmt.executeUpdate();
             if (deleted == 0) {
                 throw new IllegalStateException("No assignment found for this employee and certificate.");
             }
-        } catch (SQLException e) {
-            throw new RuntimeException("Database error while removing certificate assignment", e);
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Database error while removing certificate assignment: " + e.getMessage(), e);
         }
+    }
+
+    private AssignedCertificate mapAssignedCertificate(Record r) {
+        return new AssignedCertificate(
+                r.get("certificate_id", Integer.class),
+                r.get(CERTIFICATE.NAME),
+                r.get(CERTIFICATE.CATEGORY),
+                r.get(CERTIFICATE.ISSUER_TYPE),
+                r.get(EMPLOYEE_CERTIFICATE.VALID_FROM),
+                r.get(EMPLOYEE_CERTIFICATE.VALID_UNTIL),
+                r.get(EMPLOYEE_CERTIFICATE.CERTIFICATE_NUMBER),
+                r.get(EMPLOYEE_CERTIFICATE.STATUS)
+        );
     }
 }

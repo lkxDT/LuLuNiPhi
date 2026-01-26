@@ -10,6 +10,12 @@ public final class SQLConnection {
     public static final String DB_URL  = "jdbc:sqlite:" + DB_PATH;
 
     public static Connection open() throws SQLException {
-        return DriverManager.getConnection(DB_URL);
+        Connection conn = DriverManager.getConnection(DB_URL);
+
+        try (java.sql.Statement stmt = conn.createStatement()) {
+            stmt.execute("PRAGMA foreign_keys=ON");
+        }
+
+        return conn;
     }
 }

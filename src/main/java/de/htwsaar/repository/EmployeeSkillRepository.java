@@ -1,123 +1,152 @@
 package de.htwsaar.repository;
 
 import de.htwsaar.domain.AssignedSkill;
+import org.jooq.DSLContext;
+import org.jooq.Record;
+import org.jooq.exception.DataAccessException;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
+
+import static de.htwsaar.jooq.tables.EmployeeSkill.EMPLOYEE_SKILL;
+import static de.htwsaar.jooq.tables.Skill.SKILL;
+import static de.htwsaar.util.JooqContext.using;
 
 public class EmployeeSkillRepository {
 
-    private final Connection conn;
+    private final DSLContext dsl;
 
     public EmployeeSkillRepository(Connection conn) {
-        this.conn = conn;
+        this.dsl = using(conn);
     }
 
-    public void assign(int employeeId, int skillId, int level, String sinceDate) {
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "INSERT INTO employee_skill (employee_id, skill_id, level, since_date) " +
-                        "VALUES (?, ?, ?, ?)")) {
+    // --- ASSIGN ---
+    public void assign(int employeeId, int skillId, int level) {
+        try {
+            dsl.insertInto(EMPLOYEE_SKILL)
+                    .set(EMPLOYEE_SKILL.EMPLOYEE_ID, employeeId)
+                    .set(EMPLOYEE_SKILL.SKILL_ID, skillId)
+                    .set(EMPLOYEE_SKILL.LEVEL, level)
+                    .execute();
+        } catch (DataAccessException e) {
+            String msg = (e.getMessage() == null) ? "" : e.getMessage().toLowerCase();
 
-            stmt.setInt(1, employeeId);
-            stmt.setInt(2, skillId);
-            stmt.setInt(3, level);
-            stmt.setString(4, sinceDate);
-
-            stmt.executeUpdate();
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Database error occurred", e);
-        }
-    }
-
-    public List<AssignedSkill> findSkillsByEmployeeId(int employeeId) {
-        List<AssignedSkill> result = new ArrayList<>();
-
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "SELECT s.id AS skill_id, s.skill_name, s.category, es.level, es.since_date " +
-                        "FROM employee_skill es " +
-                        "JOIN skill s ON s.id = es.skill_id " +
-                        "WHERE es.employee_id = ? " +
-                        "ORDER BY s.skill_name COLLATE NOCASE")) {
-
-            stmt.setInt(1, employeeId);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    result.add(new AssignedSkill(
-                            rs.getInt("skill_id"),
-                            rs.getString("skill_name"),
-                            rs.getString("category"),
-                            rs.getInt("level"),
-                            rs.getString("since_date")
-                    ));
-                }
+            if (msg.contains("unique constraint failed") || msg.contains("primary key")) {
+                throw new IllegalStateException("This skill is already assigned to the employee.", e);
             }
 
-        } catch (SQLException e) {
-            throw new RuntimeException("Database error occurred", e);
-        }
+            if (msg.contains("foreign key constraint failed")) {
+                throw new IllegalStateException("Invalid employee or skill id (foreign key constraint failed).", e);
+            }
 
-        return result;
+            if (msg.contains("not null constraint failed")) {
+                throw new IllegalStateException("Missing required data while assigning the skill.", e);
+            }
+
+            throw new RuntimeException("Database error occurred while assigning skill: " + e.getMessage(), e);
+        }
     }
 
+    // --- EXISTS ---
     public boolean existsAssignment(int employeeId, int skillId) {
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "SELECT 1 FROM employee_skill WHERE employee_id = ? AND skill_id = ? LIMIT 1")) {
-
-            stmt.setInt(1, employeeId);
-            stmt.setInt(2, skillId);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next();
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Database error occurred", e);
+        try {
+            return dsl.fetchExists(
+                    dsl.selectOne()
+                            .from(EMPLOYEE_SKILL)
+                            .where(EMPLOYEE_SKILL.EMPLOYEE_ID.eq(employeeId))
+                            .and(EMPLOYEE_SKILL.SKILL_ID.eq(skillId))
+            );
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Database error while checking skill assignment", e);
         }
     }
+
     public boolean isNotAssigned(int employeeId, int skillId) {
         return !existsAssignment(employeeId, skillId);
     }
 
-    public void updateAssignment(int employeeId, int skillId, int level, String sinceDate) {
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "UPDATE employee_skill SET level = ?, since_date = ? " +
-                        "WHERE employee_id = ? AND skill_id = ?")) {
+    // --- FIND BY EMPLOYEE ---
+    public List<AssignedSkill> findByEmployeeId(int employeeId) {
+        try {
+            return dsl.select(
+                            SKILL.ID.as("skill_id"),
+                            SKILL.SKILL_NAME,
+                            SKILL.CATEGORY,
+                            EMPLOYEE_SKILL.LEVEL
+                    )
+                    .from(EMPLOYEE_SKILL)
+                    .join(SKILL).on(SKILL.ID.eq(EMPLOYEE_SKILL.SKILL_ID))
+                    .where(EMPLOYEE_SKILL.EMPLOYEE_ID.eq(employeeId))
+                    .orderBy(SKILL.SKILL_NAME.asc())
+                    .fetch(this::mapAssignedSkill);
 
-            stmt.setInt(1, level);
-            stmt.setString(2, sinceDate);
-            stmt.setInt(3, employeeId);
-            stmt.setInt(4, skillId);
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Database error occurred while loading employee skills", e);
+        }
+    }
+    public List<AssignedSkill> findSkillsByEmployeeId(int employeeId) {
+        return findByEmployeeId(employeeId);
+    }
 
-            int updatedRows = stmt.executeUpdate();
-            if (updatedRows == 0) {
+    // --- UPDATE ---
+    public void updateAssignment(int employeeId, int skillId, int level) {
+        try {
+            int updated = dsl.update(EMPLOYEE_SKILL)
+                    .set(EMPLOYEE_SKILL.LEVEL, level)
+                    .where(EMPLOYEE_SKILL.EMPLOYEE_ID.eq(employeeId))
+                    .and(EMPLOYEE_SKILL.SKILL_ID.eq(skillId))
+                    .execute();
+
+            if (updated == 0) {
                 throw new IllegalStateException("No assignment found for this employee and skill.");
             }
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Database error while updating skill assignment", e);
+        }
+    }
+    public void updateAssignment(int employeeId, int skillId, int level, String levelName) {
+        // levelName is derived information, not stored in DB
+        updateAssignment(employeeId, skillId, level);
+    }
 
-        } catch (SQLException e) {
-            throw new RuntimeException("Database error occurred", e);
+    // --- REMOVE ---
+    public void removeAssignment(int employeeId, int skillId) {
+        try {
+            int deleted = dsl.deleteFrom(EMPLOYEE_SKILL)
+                    .where(EMPLOYEE_SKILL.EMPLOYEE_ID.eq(employeeId))
+                    .and(EMPLOYEE_SKILL.SKILL_ID.eq(skillId))
+                    .execute();
+
+            if (deleted == 0) {
+                throw new IllegalStateException("No assignment found for this employee and skill.");
+            }
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Database error while removing skill assignment", e);
         }
     }
 
-    public void removeAssignment(int employeeId, int skillId) {
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "DELETE FROM employee_skill WHERE employee_id = ? AND skill_id = ?")) {
+    // --- MAPPER ---
+    private AssignedSkill mapAssignedSkill(Record r) {
+        int level = r.get(EMPLOYEE_SKILL.LEVEL);
 
-            stmt.setInt(1, employeeId);
-            stmt.setInt(2, skillId);
+        String levelName = switch (level) {
+            case 1 -> "Beginner";
+            case 2 -> "Intermediate";
+            case 3 -> "Advanced";
+            case 4 -> "Expert";
+            default -> "Unknown";
+        };
 
-            int deletedRows = stmt.executeUpdate();
-            if (deletedRows == 0) {
-                throw new IllegalStateException("No assignment found for this employee and skill.");
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Database error occurred", e);
-        }
+        return new AssignedSkill(
+                r.get("skill_id", Integer.class),
+                r.get(SKILL.SKILL_NAME),
+                r.get(SKILL.CATEGORY),
+                level,
+                levelName
+        );
+    }
+    public void assign(int employeeId, int skillId, int level, String levelName) {
+        // levelName is derived information, not stored in DB
+        assign(employeeId, skillId, level);
     }
 }

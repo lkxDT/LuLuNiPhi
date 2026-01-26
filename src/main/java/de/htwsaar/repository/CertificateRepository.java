@@ -1,177 +1,139 @@
 package de.htwsaar.repository;
 
 import de.htwsaar.domain.Certificate;
+import org.jooq.DSLContext;
+import org.jooq.Record;
+import org.jooq.exception.DataAccessException;
 
-import java.sql.*;
-import java.util.ArrayList;
+import java.sql.Connection;
 import java.util.List;
 import java.util.Optional;
 
+import static de.htwsaar.jooq.tables.Certificate.CERTIFICATE;
+import static de.htwsaar.util.JooqContext.using;
+
 public class CertificateRepository {
 
-    private final Connection conn;
+    private final DSLContext dsl;
 
     public CertificateRepository(Connection conn) {
-        this.conn = conn;
+        this.dsl = using(conn);
     }
 
-    public List<Certificate> findAll() {
-        List<Certificate> result = new ArrayList<>();
-
-        try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery("SELECT * FROM certificate ORDER BY id")) {
-
-            while (rs.next()) {
-                Integer renewalMonths = (Integer) rs.getObject("renewal_cycle_months"); // NULL-safe
-                String description = rs.getString("description"); // kann NULL sein
-
-                result.add(new Certificate(
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getString("category"),
-                        rs.getString("issuer_type"),
-                        rs.getInt("requires_renewal") == 1,
-                        renewalMonths,
-                        description
-                ));
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Database error occurred", e);
-        }
-
-        return result;
-    }
-
-    public Optional<Certificate> findById(int id) {
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "SELECT * FROM certificate WHERE id = ?")) {
-
-            stmt.setInt(1, id);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (!rs.next()) {
-                    return Optional.empty();
-                }
-
-                return Optional.of(new Certificate(
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getString("category"),
-                        rs.getString("issuer_type"),
-                        rs.getInt("requires_renewal") == 1,
-                        (Integer) rs.getObject("renewal_cycle_months"),
-                        rs.getString("description")
-                ));
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Database error occurred", e);
-        }
-    }
-    public void update(Certificate cert) {
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "UPDATE certificate SET " +
-                        "name = ?, category = ?, issuer_type = ?, " +
-                        "requires_renewal = ?, renewal_cycle_months = ?, description = ? " +
-                        "WHERE id = ?")) {
-
-            stmt.setString(1, cert.getName());
-            stmt.setString(2, cert.getCategory());
-            stmt.setString(3, cert.getIssuerType());
-            stmt.setInt(4, cert.isRequiresRenewal() ? 1 : 0);
-
-            if (cert.getRenewalCycleMonths() == null) {
-                stmt.setNull(5, java.sql.Types.INTEGER);
-            } else {
-                stmt.setInt(5, cert.getRenewalCycleMonths());
-            }
-
-            if (cert.getDescription() == null || cert.getDescription().isBlank()) {
-                stmt.setNull(6, java.sql.Types.VARCHAR);
-            } else {
-                stmt.setString(6, cert.getDescription());
-            }
-
-            stmt.setInt(7, cert.getId());
-
-            stmt.executeUpdate();
-
-        } catch (Exception e) {
-            throw new RuntimeException("Database error occurred", e);
-        }
-    }
+    // --- CREATE ---
     public Certificate save(String name,
                             String category,
                             String issuerType,
                             boolean requiresRenewal,
                             Integer renewalCycleMonths,
                             String description) {
+        try {
+            Integer newId = dsl.insertInto(CERTIFICATE)
+                    .set(CERTIFICATE.NAME, name)
+                    .set(CERTIFICATE.CATEGORY, category)
+                    .set(CERTIFICATE.ISSUER_TYPE, issuerType)
+                    .set(CERTIFICATE.REQUIRES_RENEWAL, requiresRenewal ? 1 : 0)
+                    .set(CERTIFICATE.RENEWAL_CYCLE_MONTHS, renewalCycleMonths) // may be null
+                    .set(CERTIFICATE.DESCRIPTION, description) // may be null
+                    .returning(CERTIFICATE.ID)
+                    .fetchOne(CERTIFICATE.ID);
 
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "INSERT INTO certificate(name, category, issuer_type, requires_renewal, renewal_cycle_months, description) " +
-                        "VALUES (?, ?, ?, ?, ?, ?)",
-                Statement.RETURN_GENERATED_KEYS)) {
-
-            stmt.setString(1, name);
-            stmt.setString(2, category);
-            stmt.setString(3, issuerType);
-            stmt.setInt(4, requiresRenewal ? 1 : 0);
-
-            if (renewalCycleMonths == null) {
-                stmt.setNull(5, Types.INTEGER);
-            } else {
-                stmt.setInt(5, renewalCycleMonths);
+            if (newId == null) {
+                throw new IllegalStateException("No generated key returned for certificate insert.");
             }
 
-            if (description == null || description.isBlank()) {
-                stmt.setNull(6, Types.VARCHAR);
-            } else {
-                stmt.setString(6, description);
-            }
+            return new Certificate(newId, name, category, issuerType, requiresRenewal, renewalCycleMonths, description);
 
-            stmt.executeUpdate();
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Database error occurred while saving certificate", e);
+        }
+    }
 
-            try (ResultSet keys = stmt.getGeneratedKeys()) {
-                keys.next();
-                int id = keys.getInt(1);
-                return new Certificate(id, name, category, issuerType, requiresRenewal, renewalCycleMonths, description);
-            }
+    // --- READ ---
+    public Optional<Certificate> findById(int id) {
+        try {
+            return dsl.selectFrom(CERTIFICATE)
+                    .where(CERTIFICATE.ID.eq(id))
+                    .fetchOptional(this::mapCertificate);
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Database error occurred while finding certificate by id", e);
+        }
+    }
 
-        } catch (SQLException e) {
-            throw new RuntimeException("Database error occurred", e);
+    public Optional<Certificate> findByName(String name) {
+        try {
+            return dsl.selectFrom(CERTIFICATE)
+                    .where(CERTIFICATE.NAME.eq(name))
+                    .fetchOptional(this::mapCertificate);
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Database error occurred while finding certificate by name", e);
         }
     }
     public boolean existsByNameAndIssuer(String name, String issuerType) {
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "SELECT 1 FROM certificate WHERE LOWER(name) = LOWER(?) AND LOWER(issuer_type) = LOWER(?) LIMIT 1"
-        )) {
-            stmt.setString(1, name.trim());
-            stmt.setString(2, issuerType.trim());
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next();
-            }
-        } catch (SQLException e) {
+        try {
+            return dsl.fetchExists(
+                    dsl.selectOne()
+                            .from(CERTIFICATE)
+                            .where(CERTIFICATE.NAME.eq(name))
+                            .and(CERTIFICATE.ISSUER_TYPE.eq(issuerType))
+            );
+        } catch (DataAccessException e) {
             throw new RuntimeException("Database error while checking certificate existence", e);
         }
     }
-    public boolean deleteById(int certId) {
-        // sicherheitshalber Join-Tabelle löschen
-        try (PreparedStatement j = conn.prepareStatement(
-                "DELETE FROM employee_certificate WHERE certificate_id = ?")) {
-            j.setInt(1, certId);
-            j.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException("Database error while deleting from employee_certificate", e);
-        }
 
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "DELETE FROM certificate WHERE id = ?")) {
-            stmt.setInt(1, certId);
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            throw new RuntimeException("Database error while deleting certificate", e);
+    public List<Certificate> findAll() {
+        try {
+            return dsl.selectFrom(CERTIFICATE)
+                    .orderBy(CERTIFICATE.ID.asc())
+                    .fetch(this::mapCertificate);
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Database error occurred while loading all certificates", e);
         }
+    }
+
+    // --- UPDATE ---
+    public void update(Certificate cert) {
+        try {
+            dsl.update(CERTIFICATE)
+                    .set(CERTIFICATE.NAME, cert.getName())
+                    .set(CERTIFICATE.CATEGORY, cert.getCategory())
+                    .set(CERTIFICATE.ISSUER_TYPE, cert.getIssuerType())
+                    .set(CERTIFICATE.REQUIRES_RENEWAL, cert.isRequiresRenewal() ? 1 : 0)
+                    .set(CERTIFICATE.RENEWAL_CYCLE_MONTHS, cert.getRenewalCycleMonths())
+                    .set(CERTIFICATE.DESCRIPTION, cert.getDescription())
+                    .where(CERTIFICATE.ID.eq(cert.getId()))
+                    .execute();
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Database error occurred while updating certificate", e);
+        }
+    }
+
+    // --- DELETE ---
+    public boolean deleteById(int id) {
+        try {
+            int deleted = dsl.deleteFrom(CERTIFICATE)
+                    .where(CERTIFICATE.ID.eq(id))
+                    .execute();
+            return deleted > 0;
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Database error occurred while deleting certificate", e);
+        }
+    }
+
+    // --- Mapper ---
+    private Certificate mapCertificate(Record r) {
+        Integer rr = r.get(CERTIFICATE.REQUIRES_RENEWAL);
+        boolean requiresRenewal = rr != null && rr == 1;
+
+        return new Certificate(
+                r.get(CERTIFICATE.ID),
+                r.get(CERTIFICATE.NAME),
+                r.get(CERTIFICATE.CATEGORY),
+                r.get(CERTIFICATE.ISSUER_TYPE),
+                requiresRenewal,
+                r.get(CERTIFICATE.RENEWAL_CYCLE_MONTHS),
+                r.get(CERTIFICATE.DESCRIPTION)
+        );
     }
 }

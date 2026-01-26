@@ -1,140 +1,102 @@
 package de.htwsaar.repository;
 
 import de.htwsaar.domain.Skill;
+import org.jooq.DSLContext;
+import org.jooq.Record;
+import org.jooq.exception.DataAccessException;
+
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.Statement;
-import java.sql.SQLException;
-import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static de.htwsaar.jooq.tables.Skill.SKILL;
+import static de.htwsaar.util.JooqContext.using;
+
 public class SkillRepository {
 
-    private final Connection conn;
+    private final DSLContext dsl;
 
     public SkillRepository(Connection conn) {
-        this.conn = conn;
+        this.dsl = using(conn);
     }
 
-    /**
-     * Speichert einen Skill als Eintrag in der Datenbank
-     * @param name Name des übergebenen Skills
-     * @param category Name der übergebenen Kategorie
-     * @return DomainObjekt
-     */
     public Skill save(String name, String category) {
-        try (PreparedStatement stmt =
-                     conn.prepareStatement(
-                             "INSERT INTO skill(skill_name, category) VALUES (?, ?)",
-                             Statement.RETURN_GENERATED_KEYS)) {
+        try {
+            Integer newId = dsl.insertInto(SKILL)
+                    .set(SKILL.SKILL_NAME, name)
+                    .set(SKILL.CATEGORY, category)
+                    .returning(SKILL.ID)
+                    .fetchOne(SKILL.ID);
 
-            stmt.setString(1, name);
-            stmt.setString(2, category);
-            stmt.executeUpdate();
+            if (newId == null) {
+                throw new IllegalStateException("No generated key returned for skill insert.");
+            }
 
-            ResultSet keys = stmt.getGeneratedKeys();
-            keys.next();
-            return new Skill(keys.getInt(1), name, category);
+            return new Skill(newId, name, category);
 
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Database error occurred while saving skill", e);
         }
     }
 
     public Optional<Skill> findByID(int id) {
-        try (PreparedStatement stmt = conn.prepareStatement("select * from skill where id = ?")) {
-            stmt.setInt(1, id);
-            ResultSet rs = stmt.executeQuery();
-
-            if(!rs.next()) {
-                return Optional.empty();
-            }
-
-            return Optional.of(new Skill(
-                    rs.getInt("id"),
-                    rs.getString("skill_name"),
-                    rs.getString("category")
-
-            ));
-        } catch (SQLException e) {
-            throw new RuntimeException("Database error occurred");
-
+        try {
+            return dsl.selectFrom(SKILL)
+                    .where(SKILL.ID.eq(id))
+                    .fetchOptional(this::mapSkill);
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Database error occurred while finding skill by id", e);
         }
     }
 
     public Optional<Skill> findByName(String name) {
-        try (PreparedStatement stmt = conn.prepareStatement("select * from skill where skill_name = ?")) {
-            stmt.setString(1, name);
-            ResultSet rs = stmt.executeQuery();
-
-            if(!rs.next()) {
-                return Optional.empty();
-            }
-
-            return Optional.of(new Skill(
-                    rs.getInt("id"),
-                    rs.getString("skill_name"),
-                    rs.getString("category")
-
-            ));
-        } catch (SQLException e) {
-            throw new RuntimeException("Database error occurred");
-
+        try {
+            return dsl.selectFrom(SKILL)
+                    .where(SKILL.SKILL_NAME.eq(name))
+                    .fetchOptional(this::mapSkill);
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Database error occurred while finding skill by name", e);
         }
     }
 
     public List<Skill> findAll() {
-        List<Skill> result = new ArrayList<>();
-        try(Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM skill")) {
-            while (rs.next()) {
-                result.add(new Skill(
-                        rs.getInt("id"),
-                        rs.getString("skill_name"),
-                        rs.getString("category")
-                ));
-
-                //..
-
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        try {
+            return dsl.selectFrom(SKILL)
+                    .orderBy(SKILL.ID.asc())
+                    .fetch(this::mapSkill);
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Database error occurred while loading all skills", e);
         }
-        return result;
     }
 
     public void update(Skill skill) {
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "UPDATE skill SET skill_name = ?, category = ? WHERE id = ?")) {
-
-            stmt.setString(1, skill.getName());
-            stmt.setString(2, skill.getCategory());
-            stmt.setInt(3, skill.getId());
-
-            stmt.executeUpdate();
-
-        } catch (SQLException e) {
-            throw new RuntimeException("Database error occurred", e);
+        try {
+            dsl.update(SKILL)
+                    .set(SKILL.SKILL_NAME, skill.getName())
+                    .set(SKILL.CATEGORY, skill.getCategory())
+                    .where(SKILL.ID.eq(skill.getId()))
+                    .execute();
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Database error occurred while updating skill", e);
         }
     }
-    public boolean deleteById(int skillId) {
-        // sicherheitshalber Join-Tabelle löschen (auch wenn FK-CASCADE aktiv ist)
-        try (PreparedStatement j = conn.prepareStatement(
-                "DELETE FROM employee_skill WHERE skill_id = ?")) {
-            j.setInt(1, skillId);
-            j.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException("Database error while deleting from employee_skill", e);
-        }
+    public boolean deleteById(int id) {
+        try {
+            int deleted = dsl.deleteFrom(SKILL)
+                    .where(SKILL.ID.eq(id))
+                    .execute();
 
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "DELETE FROM skill WHERE id = ?")) {
-            stmt.setInt(1, skillId);
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            throw new RuntimeException("Database error while deleting skill", e);
+            return deleted > 0;
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Database error occurred while deleting skill", e);
         }
+    }
+
+    private Skill mapSkill(Record r) {
+        return new Skill(
+                r.get(SKILL.ID),
+                r.get(SKILL.SKILL_NAME),
+                r.get(SKILL.CATEGORY)
+        );
     }
 }

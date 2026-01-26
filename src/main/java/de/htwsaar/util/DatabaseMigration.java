@@ -92,4 +92,5 @@ public class DatabaseMigration {
             throw new RuntimeException("❌ Fehler bei der Datenbank-Migration", e);
         }
     }
+
 }
