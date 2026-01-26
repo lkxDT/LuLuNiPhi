@@ -106,7 +106,7 @@ Sorting is handled centrally in repositories (e.g. skills sorted by ID)
 
 - Maven
 
-# **How to Run**
+# **How to Run** ZU BEARBEITEN
 
 1. Ensure Java and Maven are installed
 
