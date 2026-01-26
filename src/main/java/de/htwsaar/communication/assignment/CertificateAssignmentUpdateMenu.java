@@ -8,9 +8,24 @@ import de.htwsaar.domain.AssignedCertificate;
 
 import java.util.List;
 
+/**
+ * Menu for updating certificate assignments of an employee.
+ */
 public class CertificateAssignmentUpdateMenu {
+    /**
+     * Utility class constructor.
+     * Prevents instantiation.
+     */
     private CertificateAssignmentUpdateMenu() {}
 
+    /**
+     * Displays the menu to update an existing certificate assignment.
+     *
+     * @param out         OutputRenderer for console output
+     * @param in          InputReader for user input
+     * @param empService  Service for employee operations
+     * @param certService Service for certificate operations
+     */
     public static void show(OutputRenderer out, InputReader in, EmployeeService empService, CertificateService certService) {
         out.section("Update Certificate Assignment");
 

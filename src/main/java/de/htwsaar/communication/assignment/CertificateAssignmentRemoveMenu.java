@@ -8,9 +8,24 @@ import de.htwsaar.domain.AssignedCertificate;
 
 import java.util.List;
 
+/**
+ * Menu for removing certificate assignments from an employee.
+ */
 public class CertificateAssignmentRemoveMenu {
+    /**
+     * Utility class constructor.
+     * Prevents instantiation.
+     */
     private CertificateAssignmentRemoveMenu() {}
 
+    /**
+     * Displays the menu to remove a certificate assignment from an employee.
+     *
+     * @param out         OutputRenderer for console output
+     * @param in          InputReader for user input
+     * @param empService  Service for employee operations
+     * @param certService Service for certificate operations
+     */
     public static void show(OutputRenderer out, InputReader in, EmployeeService empService, CertificateService certService) {
         out.section("Remove Certificate Assignment");
 

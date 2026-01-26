@@ -5,9 +5,24 @@ import de.htwsaar.application.SkillService;
 import de.htwsaar.communication.InputReader;
 import de.htwsaar.communication.OutputRenderer;
 
+/**
+ * Menu for assigning skills to an employee.
+ */
 public class EmployeeSkillAssignMenu {
+    /**
+     * Utility class constructor.
+     * Prevents instantiation.
+     */
     private EmployeeSkillAssignMenu () {}
 
+    /**
+     * Displays the menu to assign a skill to an employee.
+     *
+     * @param out          OutputRenderer for console output
+     * @param in           InputReader for user input
+     * @param empService   Service for employee operations
+     * @param skillService Service for skill operations
+     */
     protected static void show(OutputRenderer out,
                              InputReader in,
                              EmployeeService empService,

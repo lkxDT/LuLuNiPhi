@@ -6,6 +6,9 @@ import de.htwsaar.application.SkillService;
 import de.htwsaar.communication.InputReader;
 import de.htwsaar.communication.OutputRenderer;
 
+/**
+ * Menu for managing employee assignments such as skills and certificates.
+ */
 public class AssignmentsMenu {
 
     private final EmployeeService empService;
@@ -14,6 +17,15 @@ public class AssignmentsMenu {
     private final InputReader in;
     private final OutputRenderer out;
 
+    /**
+     * Creates a new AssignmentsMenu.
+     *
+     * @param empService   Service for employee operations
+     * @param skillService Service for skill operations
+     * @param certService  Service for certificate operations
+     * @param in           InputReader for user input
+     * @param out          OutputRenderer for console output
+     */
     public AssignmentsMenu(
             EmployeeService empService,
             SkillService skillService,
@@ -28,6 +40,9 @@ public class AssignmentsMenu {
         this.out = out;
     }
 
+    /**
+     * Displays the assignments menu and handles user interaction.
+     */
     public void show() {
         boolean back = false;
 

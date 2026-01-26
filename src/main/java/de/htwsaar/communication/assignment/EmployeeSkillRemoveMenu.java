@@ -7,8 +7,18 @@ import de.htwsaar.domain.AssignedSkill;
 
 import java.util.List;
 
+/**
+ * Menu for removing skill assignments from an employee.
+ */
 public class EmployeeSkillRemoveMenu {
 
+    /**
+     * Displays the menu to remove a skill from an employee.
+     *
+     * @param out          OutputRenderer for console output
+     * @param in           InputReader for user input
+     * @param skillService Service for skill operations
+     */
     protected static void show(OutputRenderer out, InputReader in, SkillService skillService) {
         System.out.print("Employee ID: ");
         int empId;
