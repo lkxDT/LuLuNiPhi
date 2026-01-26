@@ -2,6 +2,7 @@ package de.htwsaar.repositoryTest;
 
 import de.htwsaar.domain.AssignedSkill;
 import de.htwsaar.repository.EmployeeSkillRepository;
+import org.jooq.DSLContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +26,7 @@ public class MockEmployeeSkillRepository extends EmployeeSkillRepository {
     private final List<MockAssignment> assignments = new ArrayList<>();
 
     public MockEmployeeSkillRepository() {
-        super(null);
+        super((DSLContext) null);
     }
 
     @Override
