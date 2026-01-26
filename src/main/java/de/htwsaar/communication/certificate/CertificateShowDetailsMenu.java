@@ -4,7 +4,17 @@ import de.htwsaar.application.CertificateService;
 import de.htwsaar.communication.InputReader;
 import de.htwsaar.communication.OutputRenderer;
 
+/**
+ * Menu for displaying detailed information about a certificate.
+ */
 public class CertificateShowDetailsMenu {
+    /**
+     * Displays the details of a specific certificate by its ID.
+     *
+     * @param out         OutputRenderer for console output
+     * @param in          InputReader for user input
+     * @param certService Service for certificate operations
+     */
     protected static void show(OutputRenderer out, InputReader in, CertificateService certService) {
         System.out.print("Certificate ID: ");
         int id;

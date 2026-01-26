@@ -6,10 +6,24 @@ import de.htwsaar.communication.OutputRenderer;
 
 import java.util.List;
 
+/**
+ * Menu for deleting an existing employee.
+ * <p>
+ * Prompts the user to enter an employee ID, confirms the action,
+ * and deletes the employee if confirmed. Displays warnings before deletion.
+ */
 public class EmployeeDeleteMenu {
 
     private EmployeeDeleteMenu() {}
 
+    /**
+     * Displays the menu to delete an employee.
+     * Prompts for confirmation by requiring the user to type "DELETE".
+     *
+     * @param out        OutputRenderer for console output
+     * @param in         InputReader for user input
+     * @param empService Service for employee operations
+     */
     public static void show(OutputRenderer out, InputReader in, EmployeeService empService) {
 
         System.out.print("Employee ID to delete: ");
@@ -30,7 +44,7 @@ public class EmployeeDeleteMenu {
         out.info("You are about to permanently delete:");
         out.employeeTable(List.of(empOpt.get()));
 
-        out.error("This action cannot be undone.");
+        out.warning("This action cannot be undone.");
         System.out.print("Type DELETE to confirm: ");
         String confirm = in.readLine().trim();
 

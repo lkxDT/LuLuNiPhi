@@ -5,7 +5,18 @@ import de.htwsaar.communication.InputReader;
 import de.htwsaar.communication.OutputRenderer;
 import de.htwsaar.domain.Certificate;
 
+/**
+ * Menu for updating an existing certificate.
+ */
 public class CertificateChangeMenu {
+    /**
+     * Displays the menu to modify certificate details.
+     * Pressing Enter keeps the current value for each field.
+     *
+     * @param out         OutputRenderer for console output
+     * @param in          InputReader for user input
+     * @param certService Service for certificate operations
+     */
     protected static void show(OutputRenderer out, InputReader in, CertificateService certService) {
         System.out.print("Certificate ID: ");
         int id;

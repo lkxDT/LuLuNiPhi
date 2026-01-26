@@ -5,10 +5,12 @@ import java.util.Optional;
 
 import de.htwsaar.domain.Employee;
 import de.htwsaar.repository.EmployeeRepository;
+import de.htwsaar.util.DateFormatChecker;
 
 
 public class EmployeeService {
     private final EmployeeRepository repo;
+
 
     public EmployeeService(EmployeeRepository repo) {
         this.repo = repo;
@@ -31,20 +33,21 @@ public class EmployeeService {
             throw new IllegalArgumentException("Working hours must not exceed 60 per week.");
         }
 
-        // Email automatisch erzeugen
+        if (!DateFormatChecker.check(hireDate)) {
+            throw new IllegalArgumentException("Hiring date is not a valid date");
+        }
+
+        // Automatically generates the email address
         String email = generateUniqueEmail(firstName, lastName, null);
 
-        // Repo kann RuntimeExceptions werfen -> die gehen durch bis UI (dort wird gedruckt)
+        // Repository may throw runtime exceptions that are handled by the UI
         return this.repo.save(firstName, lastName, email, role, status, hireDate, workingHours);
     }
 
     private boolean invalid(String value) {
         return value == null || value.isBlank();
     }
-    /**
-     * Erzeugt eine standardisierte Firmen-Email:
-     * firstName.lastName@medtech.de
-     */
+
     private String generateUniqueEmail(String firstName, String lastName, Integer employeeIdToIgnore) {
         String base = normalize(firstName) + "." + normalize(lastName);
         String domain = "@medtech.de";
@@ -66,17 +69,11 @@ public class EmployeeService {
         }
         return repo.existsByEmailForOtherEmployee(email, employeeIdToIgnore); // update-case
     }
+
     public String generateEmailForUpdate(String firstName, String lastName, int employeeId) {
         return generateUniqueEmail(firstName, lastName, employeeId);
     }
 
-    /**
-     * Normalisiert Namen für Email-Adressen:
-     * - trim
-     * - lowercase
-     * - entfernt Leerzeichen
-     * - ersetzt deutsche Umlaute/ß
-     */
     private String normalize(String value) {
         return value.trim()
                 .toLowerCase()

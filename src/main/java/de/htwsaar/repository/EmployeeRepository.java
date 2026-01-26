@@ -1,206 +1,164 @@
 package de.htwsaar.repository;
 
 import de.htwsaar.domain.Employee;
+import org.jooq.DSLContext;
+import org.jooq.Record;
+import org.jooq.exception.DataAccessException;
 
-import java.sql.*;
-import java.util.ArrayList;
+import java.sql.Connection;
 import java.util.List;
 import java.util.Optional;
 
+import static de.htwsaar.jooq.tables.Employee.EMPLOYEE;
+import static de.htwsaar.jooq.tables.EmployeeCertificate.EMPLOYEE_CERTIFICATE;
+import static de.htwsaar.jooq.tables.EmployeeSkill.EMPLOYEE_SKILL;
+import static de.htwsaar.util.JooqContext.using;
+
 public class EmployeeRepository {
 
-    private final Connection conn;
+    private final DSLContext dsl;
 
     public EmployeeRepository(Connection conn) {
-        this.conn = conn;
+        this.dsl = using(conn);
     }
 
-    /**
-     * Speichert einen Employee als Eintrag in der Datenbank.
-     */
     public Employee save(String firstName, String lastName,
                          String email, String role, String status,
                          String hireDate, int workingHours) {
 
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "INSERT INTO employee(first_Name, last_Name, mail, role, status, hire_date, working_hours) VALUES (?,?,?,?,?,?,?)",
-                Statement.RETURN_GENERATED_KEYS)) {
+        try {
+            // Insert + generated ID (SQLite)
+            Integer newId = dsl.insertInto(EMPLOYEE)
+                    .set(EMPLOYEE.FIRST_NAME, firstName)
+                    .set(EMPLOYEE.LAST_NAME, lastName)
+                    .set(EMPLOYEE.MAIL, email)
+                    .set(EMPLOYEE.ROLE, role)
+                    .set(EMPLOYEE.STATUS, status)
+                    .set(EMPLOYEE.HIRE_DATE, hireDate)
+                    .set(EMPLOYEE.WORKING_HOURS, (float) workingHours)
+                    .returning(EMPLOYEE.ID)
+                    .fetchOne(EMPLOYEE.ID);
 
-            stmt.setString(1, firstName);
-            stmt.setString(2, lastName);
-            stmt.setString(3, email);
-            stmt.setString(4, role);
-            stmt.setString(5, status);
-            stmt.setString(6, hireDate);
-            stmt.setInt(7, workingHours);
-
-            stmt.executeUpdate();
-
-            try (ResultSet keys = stmt.getGeneratedKeys()) {
-                if (!keys.next()) {
-                    throw new SQLException("No generated key returned for employee insert.");
-                }
-                return new Employee(keys.getInt(1), firstName, lastName, email, role, status, hireDate, workingHours);
+            if (newId == null) {
+                throw new IllegalStateException("No generated key returned for employee insert.");
             }
 
-        } catch (SQLException e) {
+            return new Employee(newId, firstName, lastName, email, role, status, hireDate, workingHours);
+
+        } catch (DataAccessException e) {
             throw new RuntimeException("Database error occurred while saving employee", e);
         }
     }
 
     public Optional<Employee> findByID(int id) {
-        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM employee WHERE id = ?")) {
-            stmt.setInt(1, id);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (!rs.next()) return Optional.empty();
-
-                return Optional.of(new Employee(
-                        rs.getInt("id"),
-                        rs.getString("first_Name"),
-                        rs.getString("last_Name"),
-                        rs.getString("mail"),
-                        rs.getString("role"),
-                        rs.getString("status"),
-                        rs.getString("hire_date"),
-                        rs.getInt("working_hours")
-                ));
-            }
-        } catch (SQLException e) {
+        try {
+            return dsl.selectFrom(EMPLOYEE)
+                    .where(EMPLOYEE.ID.eq(id))
+                    .fetchOptional(this::mapEmployee);
+        } catch (DataAccessException e) {
             throw new RuntimeException("Database error occurred while finding employee by id", e);
         }
     }
 
     public List<Employee> findByLastName(String lastName) {
-        List<Employee> result = new ArrayList<>();
-
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "SELECT * FROM employee WHERE last_Name LIKE ? COLLATE NOCASE")) {
-
-            stmt.setString(1, "%" + lastName.trim() + "%");
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    result.add(new Employee(
-                            rs.getInt("id"),
-                            rs.getString("first_Name"),
-                            rs.getString("last_Name"),
-                            rs.getString("mail"),
-                            rs.getString("role"),
-                            rs.getString("status"),
-                            rs.getString("hire_date"),
-                            rs.getInt("working_hours")
-                    ));
-                }
-            }
-
-        } catch (SQLException e) {
+        try {
+            String pattern = "%" + lastName.trim() + "%";
+            return dsl.selectFrom(EMPLOYEE)
+                    .where(EMPLOYEE.LAST_NAME.likeIgnoreCase(pattern))
+                    .orderBy(EMPLOYEE.LAST_NAME.asc())
+                    .fetch(this::mapEmployee);
+        } catch (DataAccessException e) {
             throw new RuntimeException("Database error occurred while searching employees by last name", e);
         }
-
-        return result;
     }
 
     public List<Employee> findAll() {
-        List<Employee> result = new ArrayList<>();
-        try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery("SELECT * FROM employee")) {
-
-            while (rs.next()) {
-                result.add(new Employee(
-                        rs.getInt("id"),
-                        rs.getString("first_Name"),
-                        rs.getString("last_Name"),
-                        rs.getString("mail"),
-                        rs.getString("role"),
-                        rs.getString("status"),
-                        rs.getString("hire_date"),
-                        rs.getInt("working_hours")
-                ));
-            }
-
-        } catch (SQLException e) {
+        try {
+            return dsl.selectFrom(EMPLOYEE)
+                    .orderBy(EMPLOYEE.ID.asc())
+                    .fetch(this::mapEmployee);
+        } catch (DataAccessException e) {
             throw new RuntimeException("Database error occurred while loading all employees", e);
         }
-        return result;
     }
 
     public boolean existsByEmail(String email) {
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "SELECT 1 FROM employee WHERE mail = ? LIMIT 1")) {
-
-            stmt.setString(1, email);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next();
-            }
-
-        } catch (SQLException e) {
+        try {
+            return dsl.fetchExists(
+                    dsl.selectOne()
+                            .from(EMPLOYEE)
+                            .where(EMPLOYEE.MAIL.eq(email))
+            );
+        } catch (DataAccessException e) {
             throw new RuntimeException("Database error occurred while checking email existence", e);
         }
     }
 
     public boolean existsByEmailForOtherEmployee(String email, int employeeId) {
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "SELECT 1 FROM employee WHERE mail = ? AND id <> ? LIMIT 1")) {
-
-            stmt.setString(1, email);
-            stmt.setInt(2, employeeId);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next();
-            }
-
-        } catch (SQLException e) {
+        try {
+            return dsl.fetchExists(
+                    dsl.selectOne()
+                            .from(EMPLOYEE)
+                            .where(EMPLOYEE.MAIL.eq(email))
+                            .and(EMPLOYEE.ID.ne(employeeId))
+            );
+        } catch (DataAccessException e) {
             throw new RuntimeException("Database error occurred while checking email existence for other employee", e);
         }
     }
 
     public void update(Employee emp) {
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "UPDATE employee SET first_Name = ?, last_Name = ?, mail = ?, role = ?, status = ?, hire_date = ?, working_hours = ? WHERE id = ?")) {
-
-            stmt.setString(1, emp.getFirstName());
-            stmt.setString(2, emp.getLastName());
-            stmt.setString(3, emp.getEmail());
-            stmt.setString(4, emp.getRole());
-            stmt.setString(5, emp.getStatus());
-            stmt.setString(6, emp.getHireDate());
-            stmt.setInt(7, emp.getWorkingHours());
-            stmt.setInt(8, emp.getId());
-
-            stmt.executeUpdate();
-
-        } catch (SQLException e) {
+        try {
+            dsl.update(EMPLOYEE)
+                    .set(EMPLOYEE.FIRST_NAME, emp.getFirstName())
+                    .set(EMPLOYEE.LAST_NAME, emp.getLastName())
+                    .set(EMPLOYEE.MAIL, emp.getEmail())
+                    .set(EMPLOYEE.ROLE, emp.getRole())
+                    .set(EMPLOYEE.STATUS, emp.getStatus())
+                    .set(EMPLOYEE.HIRE_DATE, emp.getHireDate())
+                    .set(EMPLOYEE.WORKING_HOURS, (float) emp.getWorkingHours())
+                    .where(EMPLOYEE.ID.eq(emp.getId()))
+                    .execute();
+        } catch (DataAccessException e) {
             throw new RuntimeException("Database error occurred while updating employee", e);
         }
     }
+
     public boolean deleteById(int employeeId) {
+        try {
+            return dsl.transactionResult(cfg -> {
+                DSLContext tx = org.jooq.impl.DSL.using(cfg);
 
-        // Join-Tabellen zuerst löschen
-        deleteJoinRows("employee_skill", employeeId);
-        deleteJoinRows("employee_certificate", employeeId);
+                // robust: erst Join-Tabellen löschen
+                tx.deleteFrom(EMPLOYEE_SKILL)
+                        .where(EMPLOYEE_SKILL.EMPLOYEE_ID.eq(employeeId))
+                        .execute();
 
-        try (PreparedStatement stmt = conn.prepareStatement(
-                "DELETE FROM employee WHERE id = ?")) {
+                tx.deleteFrom(EMPLOYEE_CERTIFICATE)
+                        .where(EMPLOYEE_CERTIFICATE.EMPLOYEE_ID.eq(employeeId))
+                        .execute();
 
-            stmt.setInt(1, employeeId);
-            int affected = stmt.executeUpdate();
-            return affected > 0;
+                int affected = tx.deleteFrom(EMPLOYEE)
+                        .where(EMPLOYEE.ID.eq(employeeId))
+                        .execute();
 
-        } catch (SQLException e) {
-            throw new RuntimeException(
-                    "Database error occurred while deleting employee: " + e.getMessage(), e);
+                return affected > 0;
+            });
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Database error occurred while deleting employee: " + e.getMessage(), e);
         }
     }
 
-    private void deleteJoinRows(String tableName, int employeeId) {
-        String sql = "DELETE FROM " + tableName + " WHERE employee_id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, employeeId);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(
-                    "Database error occurred while deleting from " + tableName, e);
-        }
+    private Employee mapEmployee(Record r) {
+        return new Employee(
+                r.get(EMPLOYEE.ID),
+                r.get(EMPLOYEE.FIRST_NAME),
+                r.get(EMPLOYEE.LAST_NAME),
+                r.get(EMPLOYEE.MAIL),
+                r.get(EMPLOYEE.ROLE),
+                r.get(EMPLOYEE.STATUS),
+                r.get(EMPLOYEE.HIRE_DATE),
+                r.get(EMPLOYEE.WORKING_HOURS).intValue()
+        );
     }
 }

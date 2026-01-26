@@ -29,10 +29,7 @@ public class SkillSearchMenu {
             case 2 -> {
                 System.out.print("Enter name: ");
                 String name = in.readLine();
-                skillService.findSkillByName(name).ifPresentOrElse(
-                        s -> out.skillTable(List.of(s)),
-                        () -> out.error("Skill not found.")
-                );
+                out.skillTable(skillService.findSkillsByName(name));
             }
         }
     }

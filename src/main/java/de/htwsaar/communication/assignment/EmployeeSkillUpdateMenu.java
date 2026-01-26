@@ -1,4 +1,4 @@
-package de.htwsaar.communication.employeeSkill;
+package de.htwsaar.communication.assignment;
 
 import de.htwsaar.application.SkillService;
 import de.htwsaar.communication.InputReader;
@@ -7,7 +7,17 @@ import de.htwsaar.domain.AssignedSkill;
 
 import java.util.List;
 
+/**
+ * Menu for updating skill assignments of an employee.
+ */
 public class EmployeeSkillUpdateMenu {
+    /**
+     * Displays the menu to update an existing skill assignment.
+     *
+     * @param out          OutputRenderer for console output
+     * @param in           InputReader for user input
+     * @param skillService Service for skill operations
+     */
     protected static void show(OutputRenderer out, InputReader in, SkillService skillService) {
         System.out.print("Employee ID: ");
         int empId;

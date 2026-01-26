@@ -25,6 +25,10 @@ public class OutputRenderer {
         System.out.println(AnsiColorUtil.RED + "[ERROR] "+ AnsiColorUtil.RESET + msg);
     }
 
+    public void warning(String msg) {
+        System.out.println(AnsiColorUtil.PURPLE + "[WARNING] "+ AnsiColorUtil.RESET + msg);
+    }
+
     public void printStartupBanner() {
         String CYAN = "\u001B[36m";
         String RESET = "\u001B[0m";

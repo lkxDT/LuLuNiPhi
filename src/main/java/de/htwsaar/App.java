@@ -8,9 +8,9 @@ import de.htwsaar.repository.CertificateRepository;
 import de.htwsaar.repository.EmployeeCertificateRepository;
 import de.htwsaar.repository.EmployeeRepository;
 import de.htwsaar.repository.EmployeeSkillRepository;
-import de.htwsaar.repository.SQLConnection;
 import de.htwsaar.repository.SkillRepository;
 import de.htwsaar.util.DatabaseMigration;
+import de.htwsaar.util.JooqContext;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -18,23 +18,20 @@ import java.sql.SQLException;
 public class App {
 
     public static void main(String[] args) {
-        DatabaseMigration.migrate();
+        //DatabaseMigration.migrate();
 
-        try (Connection conn = SQLConnection.open()) {
+        try (Connection conn = JooqContext.openConnection()) {
 
-            // Repositories
             var empRepo = new EmployeeRepository(conn);
             var skillRepo = new SkillRepository(conn);
             var empSkillRepo = new EmployeeSkillRepository(conn);
             var certRepo = new CertificateRepository(conn);
             var empCertRepo = new EmployeeCertificateRepository(conn);
 
-            // Services
             var empService = new EmployeeService(empRepo);
             var skillService = new SkillService(skillRepo, empSkillRepo);
             var certService = new CertificateService(certRepo, empCertRepo);
 
-            // UI
             new ConsoleUI().start(empService, skillService, certService);
 
         } catch (SQLException e) {

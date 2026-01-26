@@ -1,10 +1,14 @@
 package de.htwsaar.communication;
 
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import de.htwsaar.application.CertificateService;
 import de.htwsaar.application.EmployeeService;
 import de.htwsaar.application.SkillService;
+
+import de.htwsaar.communication.assignment.AssignmentsMenu;
 import de.htwsaar.communication.certificate.CertificateMenu;
 import de.htwsaar.communication.employee.EmployeeMenu;
 import de.htwsaar.communication.skill.SkillMenu;
@@ -16,24 +20,29 @@ public class ConsoleUI {
             SkillService skillService,
             CertificateService certService
     ) {
+        System.setProperty("org.jooq.no-logo", "true");
+        System.setProperty("org.jooq.no-tips", "true");
+        Logger jooqLogger = Logger.getLogger("org.jooq");
+        jooqLogger.setLevel(Level.WARNING);
+
         Scanner scanner = new Scanner(System.in);
 
         InputReader in = new InputReader(scanner);
         OutputRenderer out = new OutputRenderer();
 
-        EmployeeMenu employeeMenu =
-                new EmployeeMenu(empService, skillService, certService, in, out);
+        EmployeeMenu employeeMenu = new EmployeeMenu(empService, in, out);
+        CertificateMenu certificateMenu = new CertificateMenu(certService, in, out);
+        SkillMenu skillMenu = new SkillMenu(skillService, in, out);
 
-        SkillMenu skillMenu =
-                new SkillMenu(skillService, in, out);
-
-        CertificateMenu certificateMenu =
-                new CertificateMenu(empService, certService, in, out);
+        AssignmentsMenu assignmentsMenu = new AssignmentsMenu(
+                empService, skillService, certService, in, out
+        );
 
         MenuNavigator navigator = new MenuNavigator(
                 employeeMenu,
-                skillMenu,
                 certificateMenu,
+                skillMenu,
+                assignmentsMenu,
                 in,
                 out
         );

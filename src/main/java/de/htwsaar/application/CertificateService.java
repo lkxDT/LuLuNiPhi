@@ -9,18 +9,18 @@ import de.htwsaar.domain.AssignedCertificate;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
 
 public class CertificateService {
 
     private final CertificateRepository repo;
-    private final EmployeeCertificateRepository employeeCertRepo; // kann null sein, wenn alter Konstruktor genutzt wird
+    private final EmployeeCertificateRepository employeeCertRepo; // could be null if legacy constructor is used
 
-    // Alter Konstruktor (falls ihr ihn noch irgendwo nutzt)
     public CertificateService(CertificateRepository repo) {
         this(repo, null);
     }
 
-    // Neuer Konstruktor für Assign-Feature
     public CertificateService(CertificateRepository repo, EmployeeCertificateRepository employeeCertRepo) {
         this.repo = repo;
         this.employeeCertRepo = employeeCertRepo;
@@ -41,20 +41,23 @@ public class CertificateService {
                                          Integer renewalCycleMonths,
                                          String description) {
 
+
         if (invalid(name) || invalid(category) || invalid(issuerType)) {
             throw new IllegalArgumentException("Name, category and issuer type must be filled out.");
         }
+
         if (repo.existsByNameAndIssuer(name, issuerType)) {
             throw new IllegalArgumentException(
                     "Certificate' " + name + "' from issuer'" + issuerType + "' already exists."
             );
         }
+        // when requiresRenewal is true, check if renewalCycle is set
         if (requiresRenewal) {
             if (renewalCycleMonths == null || renewalCycleMonths <= 0) {
                 throw new IllegalArgumentException("Renewal cycle must be greater than 0 if renewal is required.");
             }
         } else {
-            renewalCycleMonths = null; // erzwingen
+            renewalCycleMonths = null; // when requireRenewal is false, force null
         }
 
         return repo.save(
@@ -71,7 +74,7 @@ public class CertificateService {
         repo.update(cert);
     }
 
-    // Assign certificate to employee (mapped to your DB schema: valid_from / valid_until / certificate_number / status)
+
     public void assignCertificateToEmployee(int employeeId, int certificateId, String assignedDate) {
 
         if (employeeCertRepo == null) {
@@ -82,27 +85,32 @@ public class CertificateService {
             throw new IllegalArgumentException("Invalid assigned date. Use yyyy-mm-dd.");
         }
 
-        Optional<Certificate> certOpt = repo.findById(certificateId);
-        if (certOpt.isEmpty()) {
-            throw new IllegalArgumentException("Certificate with ID " + certificateId + " not found.");
-        }
+        repo.ctx().transaction(cfg -> {
+            DSLContext tx = DSL.using(cfg);
 
-        Certificate cert = certOpt.get();
+            var certRepoTx = new CertificateRepository(tx);
+            var empCertRepoTx = new EmployeeCertificateRepository(tx);
 
-        String validFrom = assignedDate;
-        String validUntil = null;
+            Certificate cert = certRepoTx.findById(certificateId)
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Certificate with ID " + certificateId + " not found."
+                    ));
 
-        if (cert.isRequiresRenewal()) {
-            Integer cycle = cert.getRenewalCycleMonths();
-            if (cycle != null && cycle > 0) {
-                validUntil = LocalDate.parse(assignedDate).plusMonths(cycle).toString();
+            String validFrom = assignedDate;
+            String validUntil = null;
+
+            if (cert.isRequiresRenewal()) {
+                Integer cycle = cert.getRenewalCycleMonths();
+                if (cycle != null && cycle > 0) {
+                    validUntil = LocalDate.parse(assignedDate).plusMonths(cycle).toString();
+                }
             }
-        }
 
-        String certificateNumber = null; // optional später generieren
-        String status = "ACTIVE";
+            String certificateNumber = null;
+            String status = "ACTIVE";
 
-        employeeCertRepo.assign(employeeId, certificateId, validFrom, validUntil, certificateNumber, status);
+            empCertRepoTx.assign(employeeId, certificateId, validFrom, validUntil, certificateNumber, status);
+        });
     }
 
     private boolean invalid(String v) {
@@ -117,5 +125,74 @@ public class CertificateService {
             throw new IllegalArgumentException("Invalid employee ID.");
         }
         return employeeCertRepo.findByEmployeeId(employeeId);
+    }
+    public void deleteCertificateById(int certId) {
+        if (certId <= 0) throw new IllegalArgumentException("Invalid certificate ID.");
+
+        boolean deleted = repo.deleteById(certId);
+        if (!deleted) {
+            throw new IllegalArgumentException("Certificate with ID " + certId + " not found.");
+        }
+    }
+    public void updateCertificateAssignment(int employeeId,
+                                            int certificateId,
+                                            String assignedDate,
+                                            String certificateNumber,
+                                            String status) {
+
+        if (employeeCertRepo == null) {
+            throw new IllegalStateException("EmployeeCertificateRepository not configured.");
+        }
+
+        if (assignedDate == null || assignedDate.isBlank() || !DateFormatChecker.check(assignedDate)) {
+            throw new IllegalArgumentException("Invalid assigned date. Use yyyy-mm-dd.");
+        }
+
+        repo.ctx().transaction(cfg -> {
+            DSLContext tx = DSL.using(cfg);
+
+            var certRepoTx = new CertificateRepository(tx);
+            var empCertRepoTx = new EmployeeCertificateRepository(tx);
+
+            if (!empCertRepoTx.existsAssignment(employeeId, certificateId)) {
+                throw new IllegalStateException("This certificate is not assigned to the employee.");
+            }
+
+            Certificate cert = certRepoTx.findById(certificateId)
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Certificate with ID " + certificateId + " not found."
+                    ));
+
+            String validFrom = assignedDate;
+            String validUntil = null;
+
+            if (cert.isRequiresRenewal()) {
+                Integer cycle = cert.getRenewalCycleMonths();
+                if (cycle != null && cycle > 0) {
+                    validUntil = LocalDate.parse(assignedDate).plusMonths(cycle).toString();
+                }
+            }
+
+            String normalizedStatus = (status == null || status.isBlank()) ? "ACTIVE" : status.trim().toUpperCase();
+            String certNo = (certificateNumber == null || certificateNumber.isBlank()) ? null : certificateNumber.trim();
+
+            empCertRepoTx.updateAssignment(employeeId, certificateId, validFrom, validUntil, certNo, normalizedStatus);
+        });
+    }
+
+    public void removeCertificateFromEmployee(int employeeId, int certificateId) {
+        if (employeeCertRepo == null) {
+            throw new IllegalStateException("EmployeeCertificateRepository not configured.");
+        }
+
+        repo.ctx().transaction(cfg -> {
+            DSLContext tx = DSL.using(cfg);
+            var empCertRepoTx = new EmployeeCertificateRepository(tx);
+
+            if (!empCertRepoTx.existsAssignment(employeeId, certificateId)) {
+                throw new IllegalStateException("This certificate is not assigned to the employee.");
+            }
+            empCertRepoTx.removeAssignment(employeeId, certificateId);
+        });
     }
 }

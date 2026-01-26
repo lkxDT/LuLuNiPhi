@@ -1,15 +1,13 @@
-package de.htwsaar.applicationtests;
+package de.htwsaar.applicationTests;
 
 import de.htwsaar.application.SkillService;
 import de.htwsaar.domain.Skill;
-import de.htwsaar.repositoryTest.MockEmployeeSkillRepository;
 import de.htwsaar.repositoryTest.MockSkillRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,12 +15,11 @@ class SkillServiceTest {
 
     private SkillService skillService;
     private MockSkillRepository mockRepo;
-    private MockEmployeeSkillRepository mockEmployeeSkillRepo;
+
 
     @BeforeEach
     void setUp() {
         this.mockRepo = new MockSkillRepository();
-        this.mockEmployeeSkillRepo = new MockEmployeeSkillRepository();
         this.skillService = new SkillService(mockRepo, null);
     }
 
@@ -42,10 +39,8 @@ class SkillServiceTest {
     @Test
     @DisplayName("findSkillByName: Should find an existing skill")
     void testFindSkillByName() {
-        Optional<Skill> result = skillService.findSkillByName("Java");
-
-        assertTrue(result.isPresent(), "Skill 'Java' should be found");
-        assertEquals("Java", result.get().getName());
+       List<Skill> result = skillService.findSkillsByName("Java");
+        assertEquals("Java", result.get(0).getName());
         System.err.println("\u001B[32m✔ SkillService: findSkillByName correctly retrieved 'Java'\u001B[0m");
     }
 
