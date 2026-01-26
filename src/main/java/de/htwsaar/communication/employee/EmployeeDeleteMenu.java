@@ -6,10 +6,24 @@ import de.htwsaar.communication.OutputRenderer;
 
 import java.util.List;
 
+/**
+ * Menu for deleting an existing employee.
+ * <p>
+ * Prompts the user to enter an employee ID, confirms the action,
+ * and deletes the employee if confirmed. Displays warnings before deletion.
+ */
 public class EmployeeDeleteMenu {
 
     private EmployeeDeleteMenu() {}
 
+    /**
+     * Displays the menu to delete an employee.
+     * Prompts for confirmation by requiring the user to type "DELETE".
+     *
+     * @param out        OutputRenderer for console output
+     * @param in         InputReader for user input
+     * @param empService Service for employee operations
+     */
     public static void show(OutputRenderer out, InputReader in, EmployeeService empService) {
 
         System.out.print("Employee ID to delete: ");

@@ -4,18 +4,32 @@ import de.htwsaar.application.CertificateService;
 import de.htwsaar.communication.InputReader;
 import de.htwsaar.communication.OutputRenderer;
 
+/**
+ * Menu for managing certificates.
+ */
 public class CertificateMenu {
 
     private final CertificateService certService;
     private final InputReader in;
     private final OutputRenderer out;
 
+    /**
+     * Constructor for CertificateMenu.
+     *
+     * @param certService Service for certificate operations
+     * @param in          InputReader for user input
+     * @param out         OutputRenderer for console output
+     */
     public CertificateMenu(CertificateService certService, InputReader in, OutputRenderer out) {
         this.certService = certService;
         this.in = in;
         this.out = out;
     }
 
+    /**
+     * Displays the certificate management menu.
+     * Provides options to show, add, change, or delete certificates.
+     */
     public void show() {
         boolean back = false;
 

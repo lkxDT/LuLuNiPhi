@@ -5,9 +5,21 @@ import de.htwsaar.communication.InputReader;
 import de.htwsaar.communication.OutputRenderer;
 import de.htwsaar.domain.Employee;
 
+/**
+ * Menu for updating an existing employee's information.
+ */
 public class EmployeeChangeMenu {
     private EmployeeChangeMenu() {}
 
+    /**
+     * Displays the menu to update an employee's details.
+     * Allows editing first name, last name, role, status, hire date, and working hours.
+     * Optionally regenerates the email if the name changes.
+     *
+     * @param out        OutputRenderer for console output
+     * @param in         InputReader for user input
+     * @param empService Service for employee operations
+     */
     protected static void show(OutputRenderer out, InputReader in, EmployeeService empService) {
         out.section("Change Employee");
 

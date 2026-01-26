@@ -4,9 +4,24 @@ import de.htwsaar.application.CertificateService;
 import de.htwsaar.communication.InputReader;
 import de.htwsaar.communication.OutputRenderer;
 
+/**
+ * Menu for deleting a certificate.
+ */
 public class CertificateDeleteMenu {
+    /**
+     * Utility class constructor.
+     * Prevents instantiation.
+     */
     private CertificateDeleteMenu() {}
 
+    /**
+     * Displays the menu to delete a certificate.
+     * Confirms with the user before deletion.
+     *
+     * @param out         OutputRenderer for console output
+     * @param in          InputReader for user input
+     * @param certService Service for certificate operations
+     */
     public static void show(OutputRenderer out, InputReader in, CertificateService certService) {
         out.section("Delete Certificate");
 

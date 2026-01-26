@@ -6,7 +6,17 @@ import de.htwsaar.communication.OutputRenderer;
 import de.htwsaar.domain.Employee;
 
 
+/**
+ * Menu for adding a new employee.
+ */
 public class EmployeeAddMenu {
+    /**
+     * Displays the menu to input employee data and creates a new employee.
+     *
+     * @param out        OutputRenderer for console output
+     * @param in         InputReader for user input
+     * @param empService Service for employee operations
+     */
     private EmployeeAddMenu() {}
     protected static void show(OutputRenderer out,
                                     InputReader in,

@@ -4,18 +4,44 @@ import de.htwsaar.application.EmployeeService;
 import de.htwsaar.communication.InputReader;
 import de.htwsaar.communication.OutputRenderer;
 
+/**
+ * Main menu for managing employees.
+ * <p>
+ * Provides options to show all employees, search, add, change, or delete employees.
+ * Loops until the user chooses to return.
+ */
 public class EmployeeMenu {
 
     private final EmployeeService empService;
     private final InputReader in;
     private final OutputRenderer out;
 
+    /**
+     * Constructs an EmployeeMenu with the required services and I/O handlers.
+     *
+     * @param empService Service for employee operations
+     * @param in         InputReader for user input
+     * @param out        OutputRenderer for console output
+     */
     public EmployeeMenu(EmployeeService empService, InputReader in, OutputRenderer out) {
         this.empService = empService;
         this.in = in;
         this.out = out;
     }
 
+    /**
+     * Displays the employee menu and handles user interactions.
+     * <p>
+     * Users can:
+     * <ul>
+     *     <li>Show all employees</li>
+     *     <li>Search for a specific employee</li>
+     *     <li>Add a new employee</li>
+     *     <li>Change an existing employee</li>
+     *     <li>Delete an employee</li>
+     *     <li>Return to the previous menu</li>
+     * </ul>
+     */
     public void show() {
         boolean back = false;
 

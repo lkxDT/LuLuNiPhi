@@ -7,7 +7,17 @@ import de.htwsaar.domain.Certificate;
 
 import java.util.List;
 
+/**
+ * Menu for adding a new certificate.
+ */
 public class CertificateAddMenu {
+    /**
+     * Displays the menu to create a new certificate.
+     *
+     * @param out         OutputRenderer for console output
+     * @param in          InputReader for user input
+     * @param certService Service for certificate operations
+     */
     protected static void show(OutputRenderer out, InputReader in, CertificateService certService) {
         out.section("Add Certificate");
 
