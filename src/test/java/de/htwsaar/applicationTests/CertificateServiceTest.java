@@ -1,4 +1,4 @@
-package de.htwsaar.applicationtests;
+package de.htwsaar.applicationTests;
 
 import de.htwsaar.application.CertificateService;
 import de.htwsaar.domain.Certificate;

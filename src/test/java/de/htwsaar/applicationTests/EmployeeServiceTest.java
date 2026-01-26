@@ -1,8 +1,7 @@
-package de.htwsaar.applicationtests;
+package de.htwsaar.applicationTests;
 
 import de.htwsaar.application.EmployeeService;
 import de.htwsaar.domain.Employee;
-import de.htwsaar.repository.EmployeeRepository;
 import de.htwsaar.repositoryTest.MockEmployeeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

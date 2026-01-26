@@ -1,9 +1,8 @@
-package de.htwsaar.communicationTest;
+package de.htwsaar.communication;
 
 import de.htwsaar.application.EmployeeService;
 import de.htwsaar.application.SkillService;
 import de.htwsaar.application.CertificateService;
-import de.htwsaar.communication.ConsoleUI;
 import de.htwsaar.repositoryTest.MockCertificateRepository;
 import de.htwsaar.repositoryTest.MockEmployeeRepository;
 import de.htwsaar.repositoryTest.MockSkillRepository;
