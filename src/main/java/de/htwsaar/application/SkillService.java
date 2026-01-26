@@ -7,6 +7,8 @@ import de.htwsaar.domain.Skill;
 import de.htwsaar.repository.EmployeeSkillRepository;
 import de.htwsaar.repository.SkillRepository;
 import de.htwsaar.util.DateFormatChecker;
+import org.jooq.DSLContext;
+import org.jooq.impl.DSL;
 
 public class SkillService {
 
@@ -26,50 +28,55 @@ public class SkillService {
         return skillRepo.findByID(id);
     }
 
-    public Optional<Skill> findSkillByName(String name) {
-        return skillRepo.findByName(name);
+    public List<Skill> findSkillsByName(String name) {
+        return skillRepo.findSkillsByName(name);
     }
 
     public void assignSkill(int empId, int skillId, int level, String sinceDate) {
         validateSkillLevel(level);
-        if (employeeSkillRepo.isNotAssigned(empId, skillId)) {
-            throw new IllegalStateException(
-                    "This skill is already assigned to the employee."
-            );
-        }
 
         if (!DateFormatChecker.check(sinceDate)) {
-            throw new IllegalArgumentException(
-                    "The given date is not a valid date"
-            );
+            throw new IllegalArgumentException("The given date is not a valid date");
         }
 
-        employeeSkillRepo.assign(empId, skillId, level, sinceDate);
+        employeeSkillRepo.ctx().transaction(cfg -> {
+            DSLContext tx = DSL.using(cfg);
+            var txRepo = new EmployeeSkillRepository(tx);
+
+            if (txRepo.existsAssignment(empId, skillId)) {
+                throw new IllegalStateException("This skill is already assigned to the employee.");
+            }
+
+            txRepo.assign(empId, skillId, level, sinceDate);
+        });
     }
 
     public void updateSkillAssignment(int empId, int skillId, int level, String sinceDate) {
         if (level < 1 || level > 5) {
             throw new IllegalArgumentException("Level must be between 1 and 5.");
         }
-        /*if (sinceDate == null || sinceDate.isBlank()) {
-            throw new IllegalArgumentException("Since date must not be empty.");
-        }*/
         if (!DateFormatChecker.check(sinceDate)) {
-            throw new IllegalArgumentException(
-                    "The given date is not a valid date"
-            );
+            throw new IllegalArgumentException("The given date is not a valid date");
         }
 
-        employeeSkillRepo.updateAssignment(empId, skillId, level, sinceDate);
+        employeeSkillRepo.ctx().transaction(cfg -> {
+            DSLContext tx = DSL.using(cfg);
+            new EmployeeSkillRepository(tx).updateAssignment(empId, skillId, level, sinceDate);
+        });
     }
 
     public void removeSkillFromEmployee(int empId, int skillId) {
 
-        if (employeeSkillRepo.isNotAssigned(empId, skillId)) {
-            throw new IllegalStateException("This skill is not assigned to the employee.");
-        }
+        employeeSkillRepo.ctx().transaction(cfg -> {
+            DSLContext tx = DSL.using(cfg);
+            var txRepo = new EmployeeSkillRepository(tx);
 
-        employeeSkillRepo.removeAssignment(empId, skillId);
+            if (txRepo.existsAssignment(empId, skillId)) {
+                throw new IllegalStateException("This skill is already assigned to the employee.");
+            }
+
+            txRepo.removeAssignment(empId, skillId);
+        });
     }
 
     public Skill createSkill(String name, String category) {

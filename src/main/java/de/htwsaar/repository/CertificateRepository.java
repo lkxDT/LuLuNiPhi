@@ -20,7 +20,14 @@ public class CertificateRepository {
         this.dsl = using(conn);
     }
 
-    // --- CREATE ---
+    public CertificateRepository(DSLContext dsl) {
+        this.dsl = dsl;
+    }
+
+    public DSLContext ctx() {
+        return dsl;
+    }
+
     public Certificate save(String name,
                             String category,
                             String issuerType,

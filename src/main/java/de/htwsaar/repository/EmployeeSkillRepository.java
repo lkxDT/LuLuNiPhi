@@ -20,6 +20,14 @@ public class EmployeeSkillRepository {
         this.dsl = using(conn);
     }
 
+    public EmployeeSkillRepository(DSLContext dsl) {
+        this.dsl = dsl;
+    }
+
+    public DSLContext ctx() {
+        return dsl;
+    }
+
     // --- ASSIGN ---
     public void assign(int employeeId, int skillId, int level) {
         try {
@@ -60,12 +68,7 @@ public class EmployeeSkillRepository {
             throw new RuntimeException("Database error while checking skill assignment", e);
         }
     }
-
-    public boolean isNotAssigned(int employeeId, int skillId) {
-        return !existsAssignment(employeeId, skillId);
-    }
-
-    // --- FIND BY EMPLOYEE ---
+      // --- FIND BY EMPLOYEE ---
     public List<AssignedSkill> findByEmployeeId(int employeeId) {
         try {
             return dsl.select(
@@ -77,7 +80,7 @@ public class EmployeeSkillRepository {
                     .from(EMPLOYEE_SKILL)
                     .join(SKILL).on(SKILL.ID.eq(EMPLOYEE_SKILL.SKILL_ID))
                     .where(EMPLOYEE_SKILL.EMPLOYEE_ID.eq(employeeId))
-                    .orderBy(SKILL.SKILL_NAME.asc())
+                    .orderBy(SKILL.ID.asc())
                     .fetch(this::mapAssignedSkill);
 
         } catch (DataAccessException e) {

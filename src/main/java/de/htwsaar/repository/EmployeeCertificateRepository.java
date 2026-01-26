@@ -20,6 +20,17 @@ public class EmployeeCertificateRepository {
         this.dsl = using(conn);
     }
 
+    // ✅ NEU
+    public EmployeeCertificateRepository(DSLContext dsl) {
+        this.dsl = dsl;
+    }
+
+    // ✅ NEU
+    public DSLContext ctx() {
+        return dsl;
+    }
+
+
     // --- ASSIGN (API: wie vorher) ---
     public void assign(int employeeId,
                        int certificateId,
@@ -66,10 +77,6 @@ public class EmployeeCertificateRepository {
         }
     }
 
-    public boolean isNotAssigned(int employeeId, int certificateId) {
-        return !existsAssignment(employeeId, certificateId);
-    }
-
     // --- FIND BY EMPLOYEE ---
     public List<AssignedCertificate> findByEmployeeId(int employeeId) {
         try {
@@ -86,7 +93,7 @@ public class EmployeeCertificateRepository {
                     .from(EMPLOYEE_CERTIFICATE)
                     .join(CERTIFICATE).on(CERTIFICATE.ID.eq(EMPLOYEE_CERTIFICATE.CERTIFICATE_ID))
                     .where(EMPLOYEE_CERTIFICATE.EMPLOYEE_ID.eq(employeeId))
-                    .orderBy(CERTIFICATE.NAME.asc())
+                    .orderBy(CERTIFICATE.ID.asc())
                     .fetch(this::mapAssignedCertificate);
 
         } catch (DataAccessException e) {
@@ -94,7 +101,6 @@ public class EmployeeCertificateRepository {
         }
     }
 
-    // Alias falls dein Service so heißt
     public List<AssignedCertificate> findCertificatesByEmployeeId(int employeeId) {
         return findByEmployeeId(employeeId);
     }

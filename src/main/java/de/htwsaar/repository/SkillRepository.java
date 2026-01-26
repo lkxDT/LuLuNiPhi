@@ -99,4 +99,12 @@ public class SkillRepository {
                 r.get(SKILL.CATEGORY)
         );
     }
+    public List<Skill> findSkillsByName(String name) {
+        String q = (name == null) ? "" : name.trim();
+
+        return dsl.selectFrom(SKILL)
+                .where(SKILL.SKILL_NAME.likeIgnoreCase("%" + q + "%"))
+                .orderBy(SKILL.ID.asc())
+                .fetch(this::mapSkill);
+    }
 }
