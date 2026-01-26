@@ -125,7 +125,7 @@ public class OutputRenderer {
 
         for (AssignedSkill s : skills) {
             System.out.printf("%-3d | %-25s | %-20s | %-5d | %-10s%n",
-                    s.getSkillId(),
+                    s.getId(),
                     s.getName(),
                     s.getCategory(),
                     s.getLevel(),

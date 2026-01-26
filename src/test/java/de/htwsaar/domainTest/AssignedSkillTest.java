@@ -15,7 +15,7 @@ class AssignedSkillTest {
         );
 
         assertAll("Verify all assigned skill fields",
-                () -> assertEquals(101, assigned.getSkillId()),
+                () -> assertEquals(101, assigned.getId()),
                 () -> assertEquals("Java", assigned.getName()),
                 () -> assertEquals("Programming", assigned.getCategory()),
                 () -> assertEquals(4, assigned.getLevel()),

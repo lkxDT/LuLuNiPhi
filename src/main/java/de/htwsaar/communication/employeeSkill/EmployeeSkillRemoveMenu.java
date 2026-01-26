@@ -1,7 +1,6 @@
 package de.htwsaar.communication.employeeSkill;
 
 import de.htwsaar.application.SkillService;
-import de.htwsaar.application.EmployeeService;
 import de.htwsaar.communication.InputReader;
 import de.htwsaar.communication.OutputRenderer;
 import de.htwsaar.domain.AssignedSkill;
@@ -39,7 +38,7 @@ public class EmployeeSkillRemoveMenu {
         }
 
         AssignedSkill existing = skills.stream()
-                .filter(s -> s.getSkillId() == skillId)
+                .filter(s -> s.getId() == skillId)
                 .findFirst()
                 .orElse(null);
 
