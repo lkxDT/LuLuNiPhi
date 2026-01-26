@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 public class MockEmployeeRepository extends EmployeeRepository {
     private final List<Employee> database = new ArrayList<>();
     public MockEmployeeRepository() {
-        super(null);
+        super( null);
         database.add(new Employee(1, "Mia", "Müller", "mia.müller1@firma.de", "QA", "Active", "2023-07-18", 35));
         database.add(new Employee(2, "Ben", "Schmidt", "ben.schmidt2@firma.de", "Developer", "Active", "2019-03-29", 30));
     }

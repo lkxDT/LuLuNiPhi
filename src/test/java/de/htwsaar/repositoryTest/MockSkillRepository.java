@@ -4,6 +4,7 @@ import de.htwsaar.domain.Skill;
 import de.htwsaar.repository.SkillRepository;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,13 +18,23 @@ public class MockSkillRepository extends SkillRepository {
     }
 
 
-
     @Override
     public Optional<Skill> findByName(String name) {
+        if (name == null) return Optional.empty();
         return skills.stream()
-                .filter(s -> s.getName().equalsIgnoreCase(name))
-                .findFirst();
+            .filter(s -> s.getName().equalsIgnoreCase(name.trim()))
+            .findFirst();
+}
+
+    @Override
+    public List<Skill> findSkillsByName(String name) {
+        String query = (name == null) ? "" : name.trim().toLowerCase();
+        return skills.stream()
+                .filter(s -> s.getName().toLowerCase().contains(query))
+                .sorted(Comparator.comparingInt(Skill::getId))
+                .toList();
     }
+
 
     @Override
     public List<Skill> findAll() {

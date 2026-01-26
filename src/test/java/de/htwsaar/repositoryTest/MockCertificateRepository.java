@@ -2,12 +2,16 @@ package de.htwsaar.repositoryTest;
 
 import de.htwsaar.domain.Certificate;
 import de.htwsaar.repository.CertificateRepository;
+import org.jooq.DSLContext;
+
 import java.util.*;
 
 public class MockCertificateRepository extends CertificateRepository {
     private final List<Certificate> certs = new ArrayList<>();
 
-    public MockCertificateRepository() { super(null); }
+    public MockCertificateRepository() {
+        super((DSLContext) null);
+    }
 
     @Override
     public List<Certificate> findAll() { return new ArrayList<>(certs); }

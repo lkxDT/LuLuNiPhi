@@ -1,6 +1,8 @@
 package de.htwsaar.communication;
 
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import de.htwsaar.application.CertificateService;
 import de.htwsaar.application.EmployeeService;
@@ -18,6 +20,11 @@ public class ConsoleUI {
             SkillService skillService,
             CertificateService certService
     ) {
+        System.setProperty("org.jooq.no-logo", "true");
+        System.setProperty("org.jooq.no-tips", "true");
+        Logger jooqLogger = Logger.getLogger("org.jooq");
+        jooqLogger.setLevel(Level.WARNING);
+
         Scanner scanner = new Scanner(System.in);
 
         InputReader in = new InputReader(scanner);
