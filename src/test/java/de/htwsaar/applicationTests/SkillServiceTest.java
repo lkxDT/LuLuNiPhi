@@ -2,7 +2,7 @@ package de.htwsaar.applicationTests;
 
 import de.htwsaar.application.SkillService;
 import de.htwsaar.domain.Skill;
-import de.htwsaar.repositoryTest.MockSkillRepository;
+import de.htwsaar.MockRepository.MockSkillRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

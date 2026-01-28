@@ -2,7 +2,7 @@ package de.htwsaar.applicationTests;
 
 import de.htwsaar.application.CertificateService;
 import de.htwsaar.domain.Certificate;
-import de.htwsaar.repositoryTest.MockCertificateRepository;
+import de.htwsaar.MockRepository.MockCertificateRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
