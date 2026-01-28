@@ -76,18 +76,18 @@ class EmployeeSkillRepositoryTest {
 
     @Test
     void testAssignSuccess() {
-        sut.assign(1, 50, 2);
+        sut.assign(1, 50, 2, "2026-01-01");
 
         assertTrue(sut.existsAssignment(1, 50));
     }
 
     @Test
     void testAssignDuplicateThrowsException() {
-        sut.assign(1, 50, 1);
+        sut.assign(1, 50, 1, "2026-01-01");
 
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
-                () -> sut.assign(1, 50, 2)
+                () -> sut.assign(1, 50, 2, "2026-01-01")
         );
 
         assertTrue(exception.getMessage().contains("already assigned"));
@@ -97,7 +97,7 @@ class EmployeeSkillRepositoryTest {
     void testAssignInvalidForeignKeyThrowsException() {
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
-                () -> sut.assign(99, 50, 1)
+                () -> sut.assign(99, 50, 1, "2026-01-01")
         );
 
         assertTrue(exception.getMessage().contains("foreign key constraint failed"));
@@ -107,14 +107,14 @@ class EmployeeSkillRepositoryTest {
     void testExistsAssignment() {
         assertFalse(sut.existsAssignment(1, 50));
 
-        sut.assign(1, 50, 1);
+        sut.assign(1, 50, 1, "2026-01-01");
 
         assertTrue(sut.existsAssignment(1, 50));
     }
 
     @Test
     void testFindByEmployeeId() {
-        sut.assign(1, 50, 2);
+        sut.assign(1, 50, 2,"2026-01-01");
 
         List<AssignedSkill> result = sut.findByEmployeeId(1);
 
@@ -135,9 +135,9 @@ class EmployeeSkillRepositoryTest {
 
     @Test
     void testUpdateAssignment() {
-        sut.assign(1, 50, 1);
+        sut.assign(1, 50, 1, "2026-01-01");
 
-        sut.updateAssignment(1, 50, 4);
+        sut.updateAssignment(1, 50, 4, "2026-01-01");
 
         List<AssignedSkill> result = sut.findByEmployeeId(1);
         AssignedSkill updated = result.get(0);
@@ -149,13 +149,13 @@ class EmployeeSkillRepositoryTest {
     void testUpdateAssignmentThrowsIfNotFound() {
         assertThrows(
                 IllegalStateException.class,
-                () -> sut.updateAssignment(1, 50, 2)
+                () -> sut.updateAssignment(1, 50, 2, "2026-01-01")
         );
     }
 
     @Test
     void testRemoveAssignment() {
-        sut.assign(1, 50, 1);
+        sut.assign(1, 50, 1, "2026-01-01");
         assertTrue(sut.existsAssignment(1, 50));
 
         sut.removeAssignment(1, 50);
