@@ -1,4 +1,4 @@
-package de.htwsaar.repositoryTest;
+package de.htwsaar.MockRepository;
 
 import de.htwsaar.domain.Certificate;
 import de.htwsaar.repository.CertificateRepository;
