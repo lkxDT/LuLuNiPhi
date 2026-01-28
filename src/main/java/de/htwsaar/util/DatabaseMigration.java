@@ -3,7 +3,6 @@ package de.htwsaar.util;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import static de.htwsaar.util.JooqContext.DB_PATH;
 
 public class DatabaseMigration {
 

@@ -15,12 +15,21 @@ import de.htwsaar.util.JooqContext;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+
 public class App {
 
     public static void main(String[] args) {
         //DatabaseMigration.migrate();
+        String dbPath= "data/employees.db";
+        if(args.length == 1) {
+            dbPath = args[0];
+        }else if(args.length > 1) {
+            System.out.println("Usage: java -jar LuLuNiPhi-2.0 <DB-PATH>");
+            dbPath =  "";
+            System.exit(1);
+        }
 
-        try (Connection conn = JooqContext.openConnection()) {
+        try (Connection conn = JooqContext.openConnection(dbPath)) {
 
             var empRepo = new EmployeeRepository(conn);
             var skillRepo = new SkillRepository(conn);
@@ -35,7 +44,7 @@ public class App {
             new ConsoleUI().start(empService, skillService, certService);
 
         } catch (SQLException e) {
-            throw new RuntimeException("Database connection failed", e);
+            System.err.println("Database not found. Please restart and enter a valid path to a database.");
         }
     }
 }

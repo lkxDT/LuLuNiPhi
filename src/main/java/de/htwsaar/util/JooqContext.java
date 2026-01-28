@@ -13,11 +13,13 @@ public final class JooqContext {
 
     private JooqContext() {}
 
-    public static final String DB_PATH = "data/employees.db";
-    public static final String DB_URL  = "jdbc:sqlite:" + DB_PATH;
+    public static String dbPath;
+    public static String dbUrl;
 
-    public static Connection openConnection() throws SQLException {
-        Connection conn = DriverManager.getConnection(DB_URL);
+    public static Connection openConnection(String db_Path) throws SQLException {
+        dbPath = db_Path;
+        dbUrl = String.format("jdbc:sqlite:%s", dbPath);
+        Connection conn = DriverManager.getConnection(dbUrl);
         enableForeignKeys(conn);
         return conn;
     }
