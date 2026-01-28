@@ -128,12 +128,14 @@ public class OutputRenderer {
         System.out.println("-------------------------------------------------------------------------------------");
 
         for (AssignedSkill s : skills) {
+            String since = (s.getSinceDate() == null || s.getSinceDate().isBlank()) ? "-" : s.getSinceDate();
+
             System.out.printf("%-3d | %-25s | %-20s | %-5d | %-10s%n",
                     s.getId(),
                     s.getName(),
                     s.getCategory(),
                     s.getLevel(),
-                    s.getSinceDate());
+                    since);
         }
 
         System.out.println("-------------------------------------------------------------------------------------");

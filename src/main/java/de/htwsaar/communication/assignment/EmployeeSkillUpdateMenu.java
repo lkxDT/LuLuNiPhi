@@ -28,8 +28,7 @@ public class EmployeeSkillUpdateMenu {
             return;
         }
 
-        List<AssignedSkill> skills =
-                skillService.findSkillsOfEmployee(empId);
+        List<AssignedSkill> skills = skillService.findSkillsOfEmployee(empId);
 
         if (skills.isEmpty()) {
             out.info("No skills assigned.");
@@ -57,13 +56,40 @@ public class EmployeeSkillUpdateMenu {
             return;
         }
 
+        // ---- Level input (safe parsing) ----
         System.out.print("Level [" + existing.getLevel() + "]: ");
         String lvl = in.readLine();
-        int newLevel = lvl.isBlank() ? existing.getLevel() : Integer.parseInt(lvl);
 
-        System.out.print("Since [" + existing.getSinceDate() + "]: ");
+        int newLevel = existing.getLevel();
+        if (!lvl.isBlank()) {
+            try {
+                newLevel = Integer.parseInt(lvl.trim());
+            } catch (NumberFormatException e) {
+                out.error("Invalid level. Please enter a number.");
+                return;
+            }
+        }
+
+        // ---- Since input (avoid showing null) ----
+        String existingSince =
+                (existing.getSinceDate() == null || existing.getSinceDate().isBlank())
+                        ? "-"
+                        : existing.getSinceDate();
+
+        System.out.print("Since [" + existingSince + "]: ");
         String since = in.readLine();
-        if (since.isBlank()) since = existing.getSinceDate();
+
+        if (since.isBlank()) {
+            // If user keeps blank, reuse existing value (can be null if not loaded/stored yet)
+            since = existing.getSinceDate();
+        } else {
+            since = since.trim();
+        }
+
+        if (since == null || since.isBlank()) {
+            out.error("Since date is missing. Please enter a date (e.g., 2025-01-31).");
+            return;
+        }
 
         try {
             skillService.updateSkillAssignment(empId, skillId, newLevel, since);

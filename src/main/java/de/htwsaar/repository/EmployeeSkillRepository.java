@@ -2,6 +2,7 @@ package de.htwsaar.repository;
 
 import de.htwsaar.domain.AssignedSkill;
 import org.jooq.DSLContext;
+import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.exception.DataAccessException;
 
@@ -16,6 +17,9 @@ public class EmployeeSkillRepository {
 
     private final DSLContext dsl;
 
+    // Safe access to column "since_date" even if your jOOQ generator didn't create a constant for it
+    private static final Field<String> SINCE_DATE = EMPLOYEE_SKILL.field("since_date", String.class);
+
     public EmployeeSkillRepository(Connection conn) {
         this.dsl = using(conn);
     }
@@ -29,12 +33,13 @@ public class EmployeeSkillRepository {
     }
 
     // --- ASSIGN ---
-    public void assign(int employeeId, int skillId, int level) {
+    public void assign(int employeeId, int skillId, int level, String sinceDate) {
         try {
             dsl.insertInto(EMPLOYEE_SKILL)
                     .set(EMPLOYEE_SKILL.EMPLOYEE_ID, employeeId)
                     .set(EMPLOYEE_SKILL.SKILL_ID, skillId)
                     .set(EMPLOYEE_SKILL.LEVEL, level)
+                    .set(SINCE_DATE, sinceDate)
                     .execute();
         } catch (DataAccessException e) {
             String msg = (e.getMessage() == null) ? "" : e.getMessage().toLowerCase();
@@ -68,14 +73,16 @@ public class EmployeeSkillRepository {
             throw new RuntimeException("Database error while checking skill assignment", e);
         }
     }
-      // --- FIND BY EMPLOYEE ---
+
+    // --- FIND BY EMPLOYEE ---
     public List<AssignedSkill> findByEmployeeId(int employeeId) {
         try {
             return dsl.select(
                             SKILL.ID.as("skill_id"),
                             SKILL.SKILL_NAME,
                             SKILL.CATEGORY,
-                            EMPLOYEE_SKILL.LEVEL
+                            EMPLOYEE_SKILL.LEVEL,
+                            SINCE_DATE
                     )
                     .from(EMPLOYEE_SKILL)
                     .join(SKILL).on(SKILL.ID.eq(EMPLOYEE_SKILL.SKILL_ID))
@@ -87,15 +94,17 @@ public class EmployeeSkillRepository {
             throw new RuntimeException("Database error occurred while loading employee skills", e);
         }
     }
+
     public List<AssignedSkill> findSkillsByEmployeeId(int employeeId) {
         return findByEmployeeId(employeeId);
     }
 
     // --- UPDATE ---
-    public void updateAssignment(int employeeId, int skillId, int level) {
+    public void updateAssignment(int employeeId, int skillId, int level, String sinceDate) {
         try {
             int updated = dsl.update(EMPLOYEE_SKILL)
                     .set(EMPLOYEE_SKILL.LEVEL, level)
+                    .set(SINCE_DATE, sinceDate)
                     .where(EMPLOYEE_SKILL.EMPLOYEE_ID.eq(employeeId))
                     .and(EMPLOYEE_SKILL.SKILL_ID.eq(skillId))
                     .execute();
@@ -106,10 +115,6 @@ public class EmployeeSkillRepository {
         } catch (DataAccessException e) {
             throw new RuntimeException("Database error while updating skill assignment", e);
         }
-    }
-    public void updateAssignment(int employeeId, int skillId, int level, String levelName) {
-        // levelName is derived information, not stored in DB
-        updateAssignment(employeeId, skillId, level);
     }
 
     // --- REMOVE ---
@@ -131,25 +136,14 @@ public class EmployeeSkillRepository {
     // --- MAPPER ---
     private AssignedSkill mapAssignedSkill(Record r) {
         int level = r.get(EMPLOYEE_SKILL.LEVEL);
-
-        String levelName = switch (level) {
-            case 1 -> "Beginner";
-            case 2 -> "Intermediate";
-            case 3 -> "Advanced";
-            case 4 -> "Expert";
-            default -> "Unknown";
-        };
+        String sinceDate = r.get(SINCE_DATE);
 
         return new AssignedSkill(
                 r.get("skill_id", Integer.class),
                 r.get(SKILL.SKILL_NAME),
                 r.get(SKILL.CATEGORY),
                 level,
-                levelName
+                sinceDate
         );
-    }
-    public void assign(int employeeId, int skillId, int level, String levelName) {
-        // levelName is derived information, not stored in DB
-        assign(employeeId, skillId, level);
     }
 }

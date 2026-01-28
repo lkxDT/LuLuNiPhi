@@ -2,6 +2,7 @@ package de.htwsaar.application;
 
 import java.util.List;
 import java.util.Optional;
+
 import de.htwsaar.domain.AssignedSkill;
 import de.htwsaar.domain.Skill;
 import de.htwsaar.repository.EmployeeSkillRepository;
@@ -34,10 +35,7 @@ public class SkillService {
 
     public void assignSkill(int empId, int skillId, int level, String sinceDate) {
         validateSkillLevel(level);
-
-        if (!DateFormatChecker.check(sinceDate)) {
-            throw new IllegalArgumentException("The given date is not a valid date");
-        }
+        validateSinceDate(sinceDate);
 
         employeeSkillRepo.ctx().transaction(cfg -> {
             DSLContext tx = DSL.using(cfg);
@@ -52,12 +50,8 @@ public class SkillService {
     }
 
     public void updateSkillAssignment(int empId, int skillId, int level, String sinceDate) {
-        if (level < 1 || level > 5) {
-            throw new IllegalArgumentException("Level must be between 1 and 5.");
-        }
-        if (!DateFormatChecker.check(sinceDate)) {
-            throw new IllegalArgumentException("The given date is not a valid date");
-        }
+        validateSkillLevel(level);
+        validateSinceDate(sinceDate);
 
         employeeSkillRepo.ctx().transaction(cfg -> {
             DSLContext tx = DSL.using(cfg);
@@ -66,13 +60,13 @@ public class SkillService {
     }
 
     public void removeSkillFromEmployee(int empId, int skillId) {
-
         employeeSkillRepo.ctx().transaction(cfg -> {
             DSLContext tx = DSL.using(cfg);
             var txRepo = new EmployeeSkillRepository(tx);
 
-            if (txRepo.existsAssignment(empId, skillId)) {
-                throw new IllegalStateException("This skill is already assigned to the employee.");
+            // FIX: check must be inverted
+            if (!txRepo.existsAssignment(empId, skillId)) {
+                throw new IllegalStateException("This skill is not assigned to the employee.");
             }
 
             txRepo.removeAssignment(empId, skillId);
@@ -82,7 +76,7 @@ public class SkillService {
     public Skill createSkill(String name, String category) {
         validateNotEmpty(name);
         validateNotEmpty(category);
-        if(skillRepo.findByName(name).isPresent()) {
+        if (skillRepo.findByName(name).isPresent()) {
             throw new IllegalArgumentException("Skill already exists");
         }
         return skillRepo.save(name.trim(), category.trim());
@@ -98,24 +92,32 @@ public class SkillService {
         return employeeSkillRepo.findSkillsByEmployeeId(empId);
     }
 
-
-    private void validateNotEmpty(String str) throws IllegalArgumentException{
-        if (str == null || str.isBlank()) {
-            throw new IllegalArgumentException("This name or category cannot be empty");
-        }
-    }
-
-    private void validateSkillLevel(int level) throws IllegalArgumentException {
-        if (level < 1 || level > 5) {
-            throw new IllegalArgumentException("Level must be between 1 and 5.");
-        }
-    }
     public void deleteSkillById(int skillId) {
         if (skillId <= 0) throw new IllegalArgumentException("Invalid skill ID.");
 
         boolean deleted = skillRepo.deleteById(skillId);
         if (!deleted) {
             throw new IllegalArgumentException("Skill with ID " + skillId + " not found.");
+        }
+    }
+
+    // ---------------- helpers ----------------
+
+    private void validateNotEmpty(String str) {
+        if (str == null || str.isBlank()) {
+            throw new IllegalArgumentException("This name or category cannot be empty");
+        }
+    }
+
+    private void validateSkillLevel(int level) {
+        if (level < 1 || level > 5) {
+            throw new IllegalArgumentException("Level must be between 1 and 5.");
+        }
+    }
+
+    private void validateSinceDate(String sinceDate) {
+        if (!DateFormatChecker.check(sinceDate)) {
+            throw new IllegalArgumentException("The given date is not a valid date");
         }
     }
 }
