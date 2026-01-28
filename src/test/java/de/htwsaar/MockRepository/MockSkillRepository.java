@@ -1,4 +1,4 @@
-package de.htwsaar.repositoryTest;
+package de.htwsaar.MockRepository;
 
 import de.htwsaar.domain.Skill;
 import de.htwsaar.repository.SkillRepository;
