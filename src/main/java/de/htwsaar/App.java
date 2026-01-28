@@ -19,7 +19,7 @@ import java.sql.SQLException;
 public class App {
 
     public static void main(String[] args) {
-        //DatabaseMigration.migrate();
+        DatabaseMigration.migrate();
         String dbPath= "data/employees.db";
         if(args.length == 1) {
             dbPath = args[0];
@@ -27,6 +27,8 @@ public class App {
             System.out.println("Usage: java -jar LuLuNiPhi-2.0 <DB-PATH>");
             dbPath =  "";
             System.exit(1);
+        }else {
+            DatabaseMigration.migrate();
         }
 
         try (Connection conn = JooqContext.openConnection(dbPath)) {
