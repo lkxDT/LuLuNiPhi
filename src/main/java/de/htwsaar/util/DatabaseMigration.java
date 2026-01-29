@@ -7,7 +7,8 @@ import org.jooq.impl.SQLDataType;
 
 import static org.jooq.impl.DSL.*;
 
-import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -20,10 +21,17 @@ public class DatabaseMigration {
     public static void migrate() {
         DBFileHandler.createDbFile(DB_PATH);
 
+        //Check if Database already exists
+        if (Files.exists(Paths.get("data/employees.db"))) {
+            System.out.println("Datenbak existiert bereits");
+            return;
+        }
 
+        //Get the connection to JDBC
         try(Connection conn = DriverManager.getConnection("jdbc:sqlite:"+DB_PATH)) {
             DSLContext create = DSL.using(conn, SQLDialect.SQLITE);
 
+            //Employee table creation
             create.createTableIfNotExists("employee")
                     .column("id", SQLDataType.INTEGER.identity(true))
                     .column("first_Name", SQLDataType.VARCHAR(255).nullable(false))
@@ -38,6 +46,7 @@ public class DatabaseMigration {
                     )
                     .execute();
 
+            //Certificate table creation
             create.createTableIfNotExists("certificate")
                     .column("id", SQLDataType.INTEGER.identity(true))
                     .column("name", SQLDataType.VARCHAR(255).nullable(false))
@@ -52,6 +61,7 @@ public class DatabaseMigration {
                     )
                     .execute();
 
+            //Skill table creation
             create.createTableIfNotExists("skill")
                     .column("id", SQLDataType.INTEGER.identity(true))
                     .column("skill_name", SQLDataType.VARCHAR(255).nullable(false))
@@ -61,6 +71,7 @@ public class DatabaseMigration {
                     )
                     .execute();
 
+            //EmployeeCertificate table creation
             create.createTableIfNotExists("employee_certificate")
                     .column("employee_id", SQLDataType.INTEGER.nullable(false))
                     .column("certificate_id", SQLDataType.INTEGER.nullable(false))
@@ -75,7 +86,7 @@ public class DatabaseMigration {
                     )
                     .execute();
 
-
+            //EmployeeSkill table creation
             create.createTableIfNotExists("employee_skill")
                     .column("employee_id", SQLDataType.INTEGER.nullable(false))
                     .column("skill_id", SQLDataType.INTEGER.nullable(false))
@@ -89,7 +100,7 @@ public class DatabaseMigration {
                     .execute();
             System.out.println("New Database created at "+ DB_PATH);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Error creating Database");
         }
 
 
