@@ -51,7 +51,7 @@ public class EmployeeService {
         String email = generateUniqueEmail(firstName, lastName, null);
 
         // Repository may throw runtime exceptions that are handled by the UI
-        return this.repo.save(firstName, lastName, email, role, status, hireDate, workingHours);
+        return this.repo.save(firstName.strip(), lastName.strip(), email, role.strip(), status, hireDate.strip(), workingHours);
     }
 
     private boolean invalid(String value) {
@@ -59,7 +59,7 @@ public class EmployeeService {
     }
 
     private String generateUniqueEmail(String firstName, String lastName, Integer employeeIdToIgnore) {
-        String base = normalize(firstName) + "." + normalize(lastName);
+        String base = normalize(firstName.strip()) + "." + normalize(lastName.strip());
         String domain = "@medtech.de";
 
         String email = base + domain;

@@ -7,8 +7,6 @@ import org.jooq.impl.SQLDataType;
 
 import static org.jooq.impl.DSL.*;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -21,11 +19,6 @@ public class DatabaseMigration {
     public static void migrate() {
         DBFileHandler.createDbFile(DB_PATH);
 
-        //Check if Database already exists
-        if (Files.exists(Paths.get("data/employees.db"))) {
-            System.out.println("Datenbak existiert bereits");
-            return;
-        }
 
         //Get the connection to JDBC
         try(Connection conn = DriverManager.getConnection("jdbc:sqlite:"+DB_PATH)) {
@@ -98,55 +91,9 @@ public class DatabaseMigration {
                             constraint("fk_skill_id").foreignKey("skill_id").references("skill", "id").onDeleteCascade()
                     )
                     .execute();
-            System.out.println("New Database created at "+ DB_PATH);
+            System.out.println("Database at "+ DB_PATH);
         } catch (SQLException e) {
             throw new RuntimeException("Error creating Database");
         }
-
-
-
-
     }
-    /*public static void migrate() {
-
-
-    CREATE TABLE certificate (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL UNIQUE,
-  category TEXT NOT NULL,
-  issuer_type TEXT NOT NULL,
-  requires_renewal INTEGER NOT NULL,
-  renewal_cycle_months INTEGER,
-  description TEXT
-)
-
-
-
-
-
-
-
-        try {
-            Path db = Paths.get(DB_PATH);
-
-            // Ordner sicherstellen
-            Path parent = db.getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
-
-            // DB muss im Projekt vorhanden sein
-            if (!Files.exists(db)) {
-                throw new IllegalStateException(
-                        "Datenbankdatei fehlt: " + DB_PATH + "\n" +
-                                "Bitte stelle sicher, dass die Datei im Projekt enthalten ist (z.B. im Ordner 'data')."
-                );
-            }
-
-            System.out.println("✔ Datenbank gefunden: " + DB_PATH);
-
-        } catch (Exception e) {
-            throw new RuntimeException("❌ DB-Check fehlgeschlagen", e);
-        }
-    }*/
 }
