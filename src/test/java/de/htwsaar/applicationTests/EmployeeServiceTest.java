@@ -39,7 +39,7 @@ class EmployeeServiceTest {
     void testCreateEmployee() {
         Employee created = employeeService.createEmployee(
                 "Clara", "Hahn",
-                "Researcher", "Active", "2018-10-27", 20
+                "Researcher", "ACTIVE", "2018-10-27", 20
         );
         assertNotNull(created);
         assertEquals("Clara", created.getFirstName());
@@ -62,7 +62,7 @@ class EmployeeServiceTest {
     @DisplayName("Service: Should throw Exception when hours exceed 60")
     void testCreateEmployeeThrowsExceptionForTooManyHours() {
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            employeeService.createEmployee("Max", "Power", "Dev", "Active", "2026-01-13", 61);
+            employeeService.createEmployee("Max", "Power", "Dev", "ACTIVE", "2026-01-13", 61);
         });
         assertEquals("Working hours must not exceed 60 per week.", exception.getMessage());
         System.err.println("\u001B[32m✔ Service correctly threw IllegalArgumentException for excessive hours\u001B[0m");
@@ -80,7 +80,7 @@ class EmployeeServiceTest {
         String last = "null".equals(lName) ? null : lName;
 
         assertThrows(IllegalArgumentException.class, () ->
-                employeeService.createEmployee(first, last, "Dev", "Active", "2026-01-19", 40)
+                employeeService.createEmployee(first, last, "Dev", "ACTIVE", "2026-01-19", 40)
         );
         System.err.println("\u001B[32m✔ Service correctly rejected invalid name: " + fName + " " + lName + "\u001B[0m");
     }
@@ -89,7 +89,7 @@ class EmployeeServiceTest {
     @DisplayName("Email Logic: Should normalize German umlauts (ä,ö,ü,ß) and remove spaces")
     void testEmailNormalization() {
         Employee created = employeeService.createEmployee(
-                " Jürgen ", " Müller ", "Dev", "Active", "2026-01-19", 20
+                " Jürgen ", " Müller ", "Dev", "ACTIVE", "2026-01-19", 20
         );
 
         assertEquals("juergen.mueller@medtech.de", created.getEmail());
@@ -99,12 +99,12 @@ class EmployeeServiceTest {
     @Test
     @DisplayName("Email Logic: Should increment counter for duplicate names")
     void testDuplicateEmailHandling() {
-        employeeService.createEmployee("Max", "Mustermann", "Dev", "Active", "2026-01-19", 40);
+        employeeService.createEmployee("Max", "Mustermann", "Dev", "ACTIVE", "2026-01-19", 40);
 
-        Employee second = employeeService.createEmployee("Max", "Mustermann", "Dev", "Active", "2026-01-19", 40);
+        Employee second = employeeService.createEmployee("Max", "Mustermann", "Dev", "ACTIVE", "2026-01-19", 40);
         assertEquals("max.mustermann2@medtech.de", second.getEmail());
 
-        Employee third = employeeService.createEmployee("Max", "Mustermann", "Dev", "Active", "2026-01-19", 40);
+        Employee third = employeeService.createEmployee("Max", "Mustermann", "Dev", "ACTIVE", "2026-01-19", 40);
         assertEquals("max.mustermann3@medtech.de", third.getEmail());
         System.err.println("\u001B[32m✔ Service correctly incremented email counter for duplicate names\u001B[0m");
     }
@@ -112,7 +112,7 @@ class EmployeeServiceTest {
     @Test
     @DisplayName("Search: Should find employees by last name")
     void testFindByLastName() {
-        employeeService.createEmployee("John", "Doe", "Dev", "Active", "2026-01-19", 40);
+        employeeService.createEmployee("John", "Doe", "Dev", "ACTIVE", "2026-01-19", 40);
         List<Employee> results = employeeService.findEmployeesByLastName("Doe");
         assertFalse(results.isEmpty());
         assertEquals("John", results.get(0).getFirstName());

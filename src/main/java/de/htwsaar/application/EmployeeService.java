@@ -20,28 +20,38 @@ public class EmployeeService {
                                    String role, String status,
                                    String hireDate, int workingHours) {
 
+        //check for empty fields
         if (invalid(firstName) || invalid(lastName) ||
                 invalid(role) || invalid(status) || invalid(hireDate)) {
             throw new IllegalArgumentException("All fields must be filled out.");
         }
 
+        //lower boundary check for workingHours
         if (workingHours <= 0) {
             throw new IllegalArgumentException("Working hours must be greater than 0.");
         }
 
+        //upper boundary check for workingHours
         if (workingHours > 60) {
             throw new IllegalArgumentException("Working hours must not exceed 60 per week.");
         }
 
+        //check date format
         if (!DateFormatChecker.check(hireDate)) {
             throw new IllegalArgumentException("Hiring date is not a valid date");
         }
+
+        //check for invalid status fields
+        if(!status.equals("ACTIVE") && !status.equals("INACTIVE") && !status.equals("ON_LEAVE")) {
+            throw new IllegalArgumentException("status can only be \"ACTIVE\",\"INACTIVE\" or \"ON_LEAVE\"");
+        }
+
 
         // Automatically generates the email address
         String email = generateUniqueEmail(firstName, lastName, null);
 
         // Repository may throw runtime exceptions that are handled by the UI
-        return this.repo.save(firstName, lastName, email, role, status, hireDate, workingHours);
+        return this.repo.save(firstName.strip(), lastName.strip(), email, role.strip(), status, hireDate.strip(), workingHours);
     }
 
     private boolean invalid(String value) {
@@ -49,7 +59,7 @@ public class EmployeeService {
     }
 
     private String generateUniqueEmail(String firstName, String lastName, Integer employeeIdToIgnore) {
-        String base = normalize(firstName) + "." + normalize(lastName);
+        String base = normalize(firstName.strip()) + "." + normalize(lastName.strip());
         String domain = "@medtech.de";
 
         String email = base + domain;
