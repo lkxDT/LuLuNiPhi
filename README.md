@@ -8,6 +8,17 @@ The application manages employees, skills, and certificates, including many-to-m
 
 The focus of the project lies on correct database handling, clean architecture, and consistent user interaction, rather than UI frameworks.
 
+# Quickstart
+If you already have a build jar file of the program, you may just run following command:
+For creating a new database:
+
+        java -jar <program-name>.jar
+
+Or for using an existing database:
+
+        java -lar <program-name>.jar <filepath>
+
+If that does not work, please [rebuild the project](#how-to-build-)
 # Features
 
 ## Employee Management
@@ -83,20 +94,18 @@ Sorting is handled centrally in repositories (e.g. skills sorted by ID)<br>
 
 - Maven
 
-# **How to Run** ZU BEARBEITEN
+# **How to Build** 
 
 1. Ensure Java and Maven are installed
 
 2. Clone the repository
 
-3. Make sure the database file exists at:
+3. Run following command to build the jar file
+        
+        mvn clean install
+4. Navigate to the target directory
 
-    data/employees.db
-
-
-4. Run the application via the main class:
-
-        App.java
+5. Run the jar file as shown in the [Quickstart guide](#quickstart)
 
 # **Notes**
 
