@@ -14,14 +14,38 @@ import static de.htwsaar.jooq.tables.EmployeeCertificate.EMPLOYEE_CERTIFICATE;
 import static de.htwsaar.jooq.tables.EmployeeSkill.EMPLOYEE_SKILL;
 import static de.htwsaar.util.JooqContext.using;
 
+/**
+ * Repository for managing {@link Employee} persistence using jOOQ.
+ * <p>
+ * Provides CRUD operations and helper queries such as searching
+ * by last name and checking email uniqueness.
+ */
 public class EmployeeRepository {
 
     private final DSLContext dsl;
 
+    /**
+     * Creates a repository using a JDBC connection.
+     *
+     * @param conn database connection
+     */
     public EmployeeRepository(Connection conn) {
         this.dsl = using(conn);
     }
 
+    /**
+     * Saves a new employee in the database.
+     *
+     * @param firstName     employee first name
+     * @param lastName      employee last name
+     * @param email         employee email address
+     * @param role          employee role
+     * @param status        employee status
+     * @param hireDate      hire date (yyyy-mm-dd)
+     * @param workingHours  working hours per week
+     * @return the created Employee including generated ID
+     * @throws RuntimeException if a database error occurs
+     */
     public Employee save(String firstName, String lastName,
                          String email, String role, String status,
                          String hireDate, int workingHours) {
@@ -50,6 +74,13 @@ public class EmployeeRepository {
         }
     }
 
+    /**
+     * Finds an employee by ID.
+     *
+     * @param id employee ID
+     * @return an Optional containing the employee if found, otherwise empty
+     * @throws RuntimeException if a database error occurs
+     */
     public Optional<Employee> findByID(int id) {
         try {
             return dsl.selectFrom(EMPLOYEE)
@@ -60,6 +91,13 @@ public class EmployeeRepository {
         }
     }
 
+    /**
+     * Searches employees by last name using a case-insensitive LIKE query.
+     *
+     * @param lastName last name (or part of it) to search for
+     * @return list of matching employees
+     * @throws RuntimeException if a database error occurs
+     */
     public List<Employee> findByLastName(String lastName) {
         try {
             String pattern = "%" + lastName.trim() + "%";
@@ -72,6 +110,12 @@ public class EmployeeRepository {
         }
     }
 
+    /**
+     * Loads all employees ordered by ID.
+     *
+     * @return list of all employees
+     * @throws RuntimeException if a database error occurs
+     */
     public List<Employee> findAll() {
         try {
             return dsl.selectFrom(EMPLOYEE)
@@ -82,6 +126,13 @@ public class EmployeeRepository {
         }
     }
 
+    /**
+     * Checks whether an employee with the given email exists.
+     *
+     * @param email email address to check
+     * @return true if the email exists
+     * @throws RuntimeException if a database error occurs
+     */
     public boolean existsByEmail(String email) {
         try {
             return dsl.fetchExists(
@@ -94,6 +145,15 @@ public class EmployeeRepository {
         }
     }
 
+    /**
+     * Checks whether an email exists for a different employee than the given ID.
+     * Used to validate uniqueness during updates.
+     *
+     * @param email       email address to check
+     * @param employeeId  employee ID to exclude
+     * @return true if the email exists for another employee
+     * @throws RuntimeException if a database error occurs
+     */
     public boolean existsByEmailForOtherEmployee(String email, int employeeId) {
         try {
             return dsl.fetchExists(
@@ -107,6 +167,12 @@ public class EmployeeRepository {
         }
     }
 
+    /**
+     * Updates an existing employee in the database.
+     *
+     * @param emp employee with updated values
+     * @throws RuntimeException if a database error occurs
+     */
     public void update(Employee emp) {
         try {
             dsl.update(EMPLOYEE)
@@ -124,6 +190,16 @@ public class EmployeeRepository {
         }
     }
 
+    /**
+     * Deletes an employee by ID.
+     * <p>
+     * Also removes related entries from join tables (employee_skill
+     * and employee_certificate) in a transaction.
+     *
+     * @param employeeId employee ID
+     * @return true if the employee was deleted, otherwise false
+     * @throws RuntimeException if a database error occurs
+     */
     public boolean deleteById(int employeeId) {
         try {
             return dsl.transactionResult(cfg -> {
@@ -149,6 +225,12 @@ public class EmployeeRepository {
         }
     }
 
+    /**
+     * Maps a jOOQ {@link Record} to an {@link Employee}.
+     *
+     * @param r database record
+     * @return mapped Employee instance
+     */
     private Employee mapEmployee(Record r) {
         return new Employee(
                 r.get(EMPLOYEE.ID),

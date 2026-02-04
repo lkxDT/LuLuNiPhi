@@ -13,26 +13,59 @@ import static de.htwsaar.jooq.tables.EmployeeSkill.EMPLOYEE_SKILL;
 import static de.htwsaar.jooq.tables.Skill.SKILL;
 import static de.htwsaar.util.JooqContext.using;
 
+/**
+ * Repository for managing skill assignments of employees using jOOQ.
+ * <p>
+ * Handles persistence of the employee-skill relationship and
+ * provides methods to assign, update, remove and query assigned skills.
+ */
 public class EmployeeSkillRepository {
 
     private final DSLContext dsl;
 
-    // Safe access to column "since_date" even if your jOOQ generator didn't create a constant for it
+    /**
+     * Field reference for the "since_date" column.
+     * Used as a fallback in case the jOOQ generator did not create a constant.
+     */
     private static final Field<String> SINCE_DATE = EMPLOYEE_SKILL.field("since_date", String.class);
 
+    /**
+     * Creates a repository using a JDBC connection.
+     *
+     * @param conn database connection
+     */
     public EmployeeSkillRepository(Connection conn) {
         this.dsl = using(conn);
     }
 
+    /**
+     * Creates a repository using an existing jOOQ {@link DSLContext}.
+     *
+     * @param dsl jOOQ DSL context
+     */
     public EmployeeSkillRepository(DSLContext dsl) {
         this.dsl = dsl;
     }
 
+    /**
+     * Returns the jOOQ context used by this repository.
+     *
+     * @return DSLContext instance
+     */
     public DSLContext ctx() {
         return dsl;
     }
 
-    // --- ASSIGN ---
+    /**
+     * Assigns a skill to an employee.
+     *
+     * @param employeeId employee ID
+     * @param skillId    skill ID
+     * @param level      proficiency level (1–5)
+     * @param sinceDate  date since the skill is assigned
+     * @throws IllegalStateException if the assignment already exists or foreign keys are invalid
+     * @throws RuntimeException      if a database error occurs
+     */
     public void assign(int employeeId, int skillId, int level, String sinceDate) {
         try {
             dsl.insertInto(EMPLOYEE_SKILL)
@@ -60,7 +93,14 @@ public class EmployeeSkillRepository {
         }
     }
 
-    // --- EXISTS ---
+    /**
+     * Checks whether a skill assignment exists for the given employee and skill.
+     *
+     * @param employeeId employee ID
+     * @param skillId    skill ID
+     * @return true if the assignment exists
+     * @throws RuntimeException if a database error occurs
+     */
     public boolean existsAssignment(int employeeId, int skillId) {
         try {
             return dsl.fetchExists(
@@ -74,7 +114,13 @@ public class EmployeeSkillRepository {
         }
     }
 
-    // --- FIND BY EMPLOYEE ---
+    /**
+     * Loads all skills assigned to a specific employee.
+     *
+     * @param employeeId employee ID
+     * @return list of assigned skills
+     * @throws RuntimeException if a database error occurs
+     */
     public List<AssignedSkill> findByEmployeeId(int employeeId) {
         try {
             return dsl.select(
@@ -95,11 +141,26 @@ public class EmployeeSkillRepository {
         }
     }
 
+    /**
+     * Convenience alias for {@link #findByEmployeeId(int)}.
+     *
+     * @param employeeId employee ID
+     * @return list of assigned skills
+     */
     public List<AssignedSkill> findSkillsByEmployeeId(int employeeId) {
         return findByEmployeeId(employeeId);
     }
 
-    // --- UPDATE ---
+    /**
+     * Updates an existing skill assignment.
+     *
+     * @param employeeId employee ID
+     * @param skillId    skill ID
+     * @param level      new proficiency level (1–5)
+     * @param sinceDate  new since date
+     * @throws IllegalStateException if no matching assignment exists
+     * @throws RuntimeException      if a database error occurs
+     */
     public void updateAssignment(int employeeId, int skillId, int level, String sinceDate) {
         try {
             int updated = dsl.update(EMPLOYEE_SKILL)
@@ -117,7 +178,14 @@ public class EmployeeSkillRepository {
         }
     }
 
-    // --- REMOVE ---
+    /**
+     * Removes a skill assignment from an employee.
+     *
+     * @param employeeId employee ID
+     * @param skillId    skill ID
+     * @throws IllegalStateException if no matching assignment exists
+     * @throws RuntimeException      if a database error occurs
+     */
     public void removeAssignment(int employeeId, int skillId) {
         try {
             int deleted = dsl.deleteFrom(EMPLOYEE_SKILL)
@@ -133,7 +201,12 @@ public class EmployeeSkillRepository {
         }
     }
 
-    // --- MAPPER ---
+    /**
+     * Maps a jOOQ {@link Record} to an {@link AssignedSkill}.
+     *
+     * @param r database record
+     * @return mapped AssignedSkill instance
+     */
     private AssignedSkill mapAssignedSkill(Record r) {
         int level = r.get(EMPLOYEE_SKILL.LEVEL);
         String sinceDate = r.get(SINCE_DATE);

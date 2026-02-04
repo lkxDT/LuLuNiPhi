@@ -12,22 +12,55 @@ import java.util.Optional;
 import static de.htwsaar.jooq.tables.Certificate.CERTIFICATE;
 import static de.htwsaar.util.JooqContext.using;
 
+/**
+ * Repository for managing {@link Certificate} persistence using jOOQ.
+ * <p>
+ * Provides CRUD operations and mapping between database records
+ * and {@link Certificate} domain objects.
+ */
 public class CertificateRepository {
 
     private final DSLContext dsl;
 
+    /**
+     * Creates a repository using a JDBC connection.
+     *
+     * @param conn database connection
+     */
     public CertificateRepository(Connection conn) {
         this.dsl = using(conn);
     }
 
+    /**
+     * Creates a repository using an existing jOOQ {@link DSLContext}.
+     *
+     * @param dsl jOOQ DSL context
+     */
     public CertificateRepository(DSLContext dsl) {
         this.dsl = dsl;
     }
 
+    /**
+     * Returns the jOOQ context used by this repository.
+     *
+     * @return DSLContext instance
+     */
     public DSLContext ctx() {
         return dsl;
     }
 
+    /**
+     * Saves a new certificate in the database.
+     *
+     * @param name               certificate name
+     * @param category           certificate category
+     * @param issuerType         issuing authority
+     * @param requiresRenewal    whether renewal is required
+     * @param renewalCycleMonths renewal cycle in months (nullable)
+     * @param description        optional description (nullable)
+     * @return the created Certificate including generated ID
+     * @throws RuntimeException if a database error occurs
+     */
     public Certificate save(String name,
                             String category,
                             String issuerType,
@@ -56,7 +89,13 @@ public class CertificateRepository {
         }
     }
 
-    // --- READ ---
+    /**
+     * Finds a certificate by its ID.
+     *
+     * @param id certificate ID
+     * @return an Optional containing the certificate if found, otherwise empty
+     * @throws RuntimeException if a database error occurs
+     */
     public Optional<Certificate> findById(int id) {
         try {
             return dsl.selectFrom(CERTIFICATE)
@@ -67,6 +106,13 @@ public class CertificateRepository {
         }
     }
 
+    /**
+     * Finds a certificate by its name.
+     *
+     * @param name certificate name
+     * @return an Optional containing the certificate if found, otherwise empty
+     * @throws RuntimeException if a database error occurs
+     */
     public Optional<Certificate> findByName(String name) {
         try {
             return dsl.selectFrom(CERTIFICATE)
@@ -76,6 +122,14 @@ public class CertificateRepository {
             throw new RuntimeException("Database error occurred while finding certificate by name", e);
         }
     }
+    /**
+     * Checks whether a certificate with the given name and issuer exists.
+     *
+     * @param name       certificate name
+     * @param issuerType issuer type
+     * @return true if such a certificate exists
+     * @throws RuntimeException if a database error occurs
+     */
     public boolean existsByNameAndIssuer(String name, String issuerType) {
         try {
             return dsl.fetchExists(
@@ -89,6 +143,12 @@ public class CertificateRepository {
         }
     }
 
+    /**
+     * Loads all certificates ordered by ID.
+     *
+     * @return list of all certificates
+     * @throws RuntimeException if a database error occurs
+     */
     public List<Certificate> findAll() {
         try {
             return dsl.selectFrom(CERTIFICATE)
@@ -99,7 +159,12 @@ public class CertificateRepository {
         }
     }
 
-    // --- UPDATE ---
+    /**
+     * Updates an existing certificate in the database.
+     *
+     * @param cert certificate with updated values
+     * @throws RuntimeException if a database error occurs
+     */
     public void update(Certificate cert) {
         try {
             dsl.update(CERTIFICATE)
@@ -116,7 +181,13 @@ public class CertificateRepository {
         }
     }
 
-    // --- DELETE ---
+    /**
+     * Deletes a certificate by its ID.
+     *
+     * @param id certificate ID
+     * @return true if a row was deleted, otherwise false
+     * @throws RuntimeException if a database error occurs
+     */
     public boolean deleteById(int id) {
         try {
             int deleted = dsl.deleteFrom(CERTIFICATE)
@@ -128,7 +199,12 @@ public class CertificateRepository {
         }
     }
 
-    // --- Mapper ---
+    /**
+     * Maps a jOOQ {@link Record} to a {@link Certificate}.
+     *
+     * @param r database record
+     * @return mapped Certificate instance
+     */
     private Certificate mapCertificate(Record r) {
         Integer rr = r.get(CERTIFICATE.REQUIRES_RENEWAL);
         boolean requiresRenewal = rr != null && rr == 1;

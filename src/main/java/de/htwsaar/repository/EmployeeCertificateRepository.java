@@ -12,26 +12,56 @@ import static de.htwsaar.jooq.tables.Certificate.CERTIFICATE;
 import static de.htwsaar.jooq.tables.EmployeeCertificate.EMPLOYEE_CERTIFICATE;
 import static de.htwsaar.util.JooqContext.using;
 
+/**
+ * Repository for managing certificate assignments of employees using jOOQ.
+ * <p>
+ * Handles persistence of the employee-certificate relationship and
+ * provides methods to assign, update, remove and query assigned certificates.
+ */
 public class EmployeeCertificateRepository {
 
     private final DSLContext dsl;
 
+    /**
+     * Creates a repository using a JDBC connection.
+     *
+     * @param conn database connection
+     */
     public EmployeeCertificateRepository(Connection conn) {
         this.dsl = using(conn);
     }
 
-    // ✅ NEU
+    /**
+     * Creates a repository using an existing jOOQ {@link DSLContext}.
+     *
+     * @param dsl jOOQ DSL context
+     */
     public EmployeeCertificateRepository(DSLContext dsl) {
         this.dsl = dsl;
     }
 
-    // ✅ NEU
+    /**
+     * Returns the jOOQ context used by this repository.
+     *
+     * @return DSLContext instance
+     */
     public DSLContext ctx() {
         return dsl;
     }
 
 
-    // --- ASSIGN (API: wie vorher) ---
+    /**
+     * Assigns a certificate to an employee.
+     *
+     * @param employeeId        employee ID
+     * @param certificateId     certificate ID
+     * @param validFrom         validity start date
+     * @param validUntil        validity end date (nullable)
+     * @param certificateNumber certificate reference number (nullable)
+     * @param status            assignment status
+     * @throws IllegalStateException if the assignment already exists or foreign keys are invalid
+     * @throws RuntimeException      if a database error occurs
+     */
     public void assign(int employeeId,
                        int certificateId,
                        String validFrom,
@@ -63,7 +93,14 @@ public class EmployeeCertificateRepository {
         }
     }
 
-    // --- EXISTS ---
+    /**
+     * Checks whether a certificate assignment exists for the given employee and certificate.
+     *
+     * @param employeeId    employee ID
+     * @param certificateId certificate ID
+     * @return true if the assignment exists
+     * @throws RuntimeException if a database error occurs
+     */
     public boolean existsAssignment(int employeeId, int certificateId) {
         try {
             return dsl.fetchExists(
@@ -77,7 +114,13 @@ public class EmployeeCertificateRepository {
         }
     }
 
-    // --- FIND BY EMPLOYEE ---
+    /**
+     * Loads all certificates assigned to a specific employee.
+     *
+     * @param employeeId employee ID
+     * @return list of assigned certificates
+     * @throws RuntimeException if a database error occurs
+     */
     public List<AssignedCertificate> findByEmployeeId(int employeeId) {
         try {
             return dsl.select(
@@ -101,11 +144,28 @@ public class EmployeeCertificateRepository {
         }
     }
 
+    /**
+     * Convenience alias for {@link #findByEmployeeId(int)}.
+     *
+     * @param employeeId employee ID
+     * @return list of assigned certificates
+     */
     public List<AssignedCertificate> findCertificatesByEmployeeId(int employeeId) {
         return findByEmployeeId(employeeId);
     }
 
-    // --- UPDATE ---
+    /**
+     * Updates an existing certificate assignment.
+     *
+     * @param employeeId        employee ID
+     * @param certificateId     certificate ID
+     * @param validFrom         validity start date
+     * @param validUntil        validity end date (nullable)
+     * @param certificateNumber certificate reference number (nullable)
+     * @param status            assignment status
+     * @throws IllegalStateException if no matching assignment exists
+     * @throws RuntimeException      if a database error occurs
+     */
     public void updateAssignment(int employeeId,
                                  int certificateId,
                                  String validFrom,
@@ -130,7 +190,14 @@ public class EmployeeCertificateRepository {
         }
     }
 
-    // --- REMOVE ---
+    /**
+     * Removes a certificate assignment from an employee.
+     *
+     * @param employeeId    employee ID
+     * @param certificateId certificate ID
+     * @throws IllegalStateException if no matching assignment exists
+     * @throws RuntimeException      if a database error occurs
+     */
     public void removeAssignment(int employeeId, int certificateId) {
         try {
             int deleted = dsl.deleteFrom(EMPLOYEE_CERTIFICATE)
@@ -146,6 +213,12 @@ public class EmployeeCertificateRepository {
         }
     }
 
+    /**
+     * Maps a jOOQ {@link Record} to an {@link AssignedCertificate}.
+     *
+     * @param r database record
+     * @return mapped AssignedCertificate instance
+     */
     private AssignedCertificate mapAssignedCertificate(Record r) {
         return new AssignedCertificate(
                 r.get("certificate_id", Integer.class),
