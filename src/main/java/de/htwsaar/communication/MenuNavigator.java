@@ -5,6 +5,13 @@ import de.htwsaar.communication.certificate.CertificateMenu;
 import de.htwsaar.communication.employee.EmployeeMenu;
 import de.htwsaar.communication.skill.SkillMenu;
 
+/**
+ * Handles navigation between the main application menus.
+ * <p>
+ * Displays the main menu and delegates control to the selected
+ * sub-menus (employees, certificates, skills, assignments).
+ * The navigator keeps running until the user chooses to exit.
+ */
 public class MenuNavigator {
 
     private final EmployeeMenu employeeMenu;
@@ -15,6 +22,16 @@ public class MenuNavigator {
     private final InputReader in;
     private final OutputRenderer out;
 
+    /**
+     * Creates a new MenuNavigator with all required menus and utilities.
+     *
+     * @param employeeMenu menu for employee management
+     * @param certificateMenu menu for certificate management
+     * @param skillMenu menu for skill management
+     * @param assignmentsMenu menu for skill and certificate assignments
+     * @param in input reader for user input
+     * @param out output renderer for console output
+     */
     public MenuNavigator(
             EmployeeMenu employeeMenu,
             CertificateMenu certificateMenu,
@@ -31,6 +48,12 @@ public class MenuNavigator {
         this.out = out;
     }
 
+    /**
+     * Starts the main menu loop.
+     * <p>
+     * Continuously displays the main menu and routes the user
+     * to the selected submenu until the exit option is chosen.
+     */
     public void run() {
         boolean exit = false;
 
