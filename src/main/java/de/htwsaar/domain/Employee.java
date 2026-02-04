@@ -1,5 +1,12 @@
 package de.htwsaar.domain;
 
+/**
+ * Represents an employee within the system.
+ * <p>
+ * An employee contains personal, organizational and employment-related
+ * information and is used as a read-only domain object.
+ * This class is immutable.
+ */
 public class Employee {
     private final int id;
     private final String firstName;
@@ -11,6 +18,18 @@ public class Employee {
     private final int workingHours;
 
 
+    /**
+     * Creates a new employee instance.
+     *
+     * @param id            unique employee ID
+     * @param firstName     first name
+     * @param lastName      last name
+     * @param email         email address
+     * @param role          job role
+     * @param status        employment status
+     * @param hireDate      hire date (yyyy-mm-dd)
+     * @param workingHours  working hours per week
+     */
     public Employee(int id, String firstName, String lastName,
                     String email, String role, String status,
                     String hireDate, int workingHours) {
@@ -56,6 +75,12 @@ public class Employee {
         return this.workingHours;
     }
 
+    /**
+     * Returns a formatted string representation of the employee,
+     * suitable for console output.
+     *
+     * @return formatted employee string
+     */
     @Override
     public String toString() {
         return String.format("%5d | %15s | %15s | %35s | %10s | %8s | %11s | %2d",
