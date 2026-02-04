@@ -1,7 +1,17 @@
 package de.htwsaar.util;
 
+/**
+ * Utility class for ANSI color formatting in console output.
+ * <p>
+ * Provides color constants and helper methods to apply
+ * colored formatting to specific text values such as
+ * employee status indicators.
+ */
 public final class AnsiColorUtil {
 
+    /**
+     * Private constructor to prevent instantiation.
+     */
     private AnsiColorUtil() {}
 
     public static final String RESET  = "\u001B[0m";
@@ -10,6 +20,16 @@ public final class AnsiColorUtil {
     public static final String RED    = "\u001B[31m";
     public static final String PURPLE = "\u001B[35m";
 
+    /**
+     * Applies color formatting to an employee status string.
+     * <p>
+     * Known statuses are mapped to specific colors and padded
+     * to a fixed width for aligned console output.
+     *
+     * @param status status text (e.g. ACTIVE, INACTIVE, ON_LEAVE)
+     * @param width  output width for padding
+     * @return formatted and colored status string
+     */
     public static String colorizeStatus(String status, int width) {
         if (status == null) status = "";
         String s = status.trim().toUpperCase();

@@ -11,11 +11,27 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+/**
+ * Creates and migrates the SQLite database schema for the application.
+ * <p>
+ * Ensures the database file exists and creates all required tables
+ * using jOOQ DDL statements if they are not present yet.
+ */
 public class DatabaseMigration {
 
+    /** Default file path of the SQLite database. */
     private static final String DB_PATH = "data/employees.db";
 
 
+    /**
+     * Runs the database migration.
+     * <p>
+     * Creates the database file if necessary and creates all tables
+     * (employee, certificate, skill and join tables) using
+     * "createTableIfNotExists".
+     *
+     * @throws RuntimeException if the database cannot be created or accessed
+     */
     public static void migrate() {
         DBFileHandler.createDbFile(DB_PATH);
 

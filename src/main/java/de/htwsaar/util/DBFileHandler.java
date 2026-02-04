@@ -3,9 +3,25 @@ package de.htwsaar.util;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * Utility class for handling database file creation.
+ * <p>
+ * Ensures that the data directory exists and initializes
+ * the SQLite database file if it is not already present.
+ */
 public final class DBFileHandler {
+
+    /**
+     * Private constructor to prevent instantiation.
+     */
     private DBFileHandler(String path) {}
 
+    /**
+     * Creates the database directory and file if they do not exist.
+     *
+     * @param path path to the database file
+     * @throws RuntimeException if the directory or file cannot be created
+     */
     public static void createDbFile(String path){
         File dataDir = new File("data");
         if (!dataDir.exists()) {

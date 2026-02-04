@@ -15,9 +15,23 @@ import de.htwsaar.util.JooqContext;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-
+/**
+ * Application entry point.
+ * <p>
+ * Initializes the database, repositories, services and
+ * starts the console-based user interface.
+ */
 public class App {
 
+    /**
+     * Starts the application.
+     * <p>
+     * Accepts an optional database file path as command-line argument.
+     * If no path is provided, the default database is created and migrated.
+     * Initializes repositories, services and launches the console UI.
+     *
+     * @param args optional command-line arguments (database path)
+     */
     public static void main(String[] args) {
         String dbPath= "data/employees.db";
         if(args.length == 1) {
