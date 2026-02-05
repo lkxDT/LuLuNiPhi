@@ -4,11 +4,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>de.htwsaar</groupId>
-  <artifactId>LuLuNiPhi-2.0</artifactId>
+  <artifactId>LuLuNiPhi</artifactId>
   <version>1.0</version>
   <packaging>jar</packaging>
 
-  <name>LuLuNiPhi-2.0</name>
+  <name>LuLuNiPhi</name>
   <url>http://maven.apache.org</url>
 
   <properties>
